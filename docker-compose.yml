@@ -1,0 +1,199 @@
+# Define all the services/containers that will run in this Docker setup
+services:
+
+  # MySQL Database Service
+  mysql:
+    # Use official MySQL 8.0 image from Docker Hub
+    image: mysql:8.0
+    
+    # Dynamic container name using PROJECT_NAME variable from .env.docker
+    # Example: breeze-theme-mysql
+    container_name: ${PROJECT_NAME}-mysql
+    
+    # Automatically restart container unless it was explicitly stopped
+    restart: unless-stopped
+    
+    # Environment variables for MySQL configuration
+    environment:
+      # Root user password for administrative access
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      
+      # Default database that will be created when container starts
+      MYSQL_DATABASE: ${DB_DATABASE}
+      
+      # Regular database user (non-root) for application use
+      MYSQL_USER: ${DB_USERNAME}
+      
+      # Password for the regular database user
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    
+    # Port mapping: host_port:container_port
+    # Maps host machine port (from .env.docker) to container's MySQL port 3306
+    # Example: 3307:3306 (host:3307 → container:3306)
+    ports:
+      - "${MYSQL_PORT}:3306"
+    
+    # Volume mounts for data persistence and initialization
+    volumes:
+      # Named volume for database data persistence (survives container restarts)
+      - mysql_data:/var/lib/mysql
+      
+      # Local directory containing SQL scripts that run on first startup
+      # Used for database schema initialization, seed data, etc.
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d
+    
+    # Connect this service to the custom Docker network
+    networks:
+      - breeze-theme
+    
+    # Health check to ensure MySQL is ready before other services start
+    healthcheck:
+      # Command to check if MySQL is responsive
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      
+      # Check every 5 seconds
+      interval: 5s
+      
+      # Maximum time to wait for health check response
+      timeout: 5s
+      
+      # Number of consecutive failures before considering container unhealthy
+      retries: 5
+      
+      # Wait 10 seconds before starting health checks (gives MySQL time to start)
+      start_period: 10s
+
+  # PHP-FPM Application Service (Laravel)
+  app:
+    # Build custom image from Dockerfile instead of using pre-built image
+    build:
+      context: .  # Build context is the current directory
+      dockerfile: docker/php/Dockerfile  # Path to Dockerfile
+      args:
+        USER_ID: 1000  # Your host user ID (run `id -u` to check)
+        GROUP_ID: 1000 # Your host group ID (run `id -g` to check)
+    # Dynamic container name
+    container_name: ${PROJECT_NAME}-app
+    
+    # Volume mounts for code and Laravel directories
+    volumes:
+      # Mount local src directory to container's web root (live code changes)
+      - ./src:/var/www/html
+      
+      # Mount storage separately for Laravel (logs, cache, uploads)
+      # - ./src/storage:/var/www/html/storage
+      
+      # Mount bootstrap cache for Laravel (compiled classes, config cache)
+      # - ./src/bootstrap/cache:/var/www/html/bootstrap/cache
+      - ./docker/php/entrypoint.sh:/usr/local/bin/entrypoint.sh
+      
+    # Environment variables for Laravel application
+    environment:
+      # Laravel environment (local, production, etc.)
+      APP_ENV: ${APP_ENV}
+      
+      # Debug mode (true/false) - shows detailed errors
+      APP_DEBUG: ${APP_DEBUG}
+      
+      # Database configuration for Laravel
+      DB_CONNECTION: mysql
+      DB_HOST: ${PROJECT_NAME}-mysql  # Uses container name as hostname
+      DB_PORT: 3306                   # MySQL port inside Docker network
+      DB_DATABASE: ${DB_DATABASE}     # Database name
+      DB_USERNAME: ${DB_USERNAME}     # Database user
+      DB_PASSWORD: ${DB_PASSWORD}     # Database password
+    
+    # Dependency management - ensures MySQL is healthy before starting app
+    depends_on:
+      mysql:
+        condition: service_healthy  # Wait until MySQL healthcheck passes
+    
+    # Connect to the same custom network
+    networks:
+      - breeze-theme
+
+  # Nginx Web Server Service
+  nginx:
+    # Use latest official Nginx image
+    image: nginx:latest
+    
+    # Dynamic container name
+    container_name: ${PROJECT_NAME}-nginx
+    
+    # Port mapping for web access
+    ports:
+      - "${NGINX_PORT}:80"  # Maps host port to Nginx port 80
+    
+    # Volume mounts for web content and configuration
+    volumes:
+      # Mount Laravel application code (same as app container)
+      - ./src:/var/www/html
+      
+      # Custom Nginx configuration file
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    
+    # Dependency - ensure PHP-FPM app is running before Nginx starts
+    depends_on:
+      - app
+    
+    # Connect to the same custom network
+    networks:
+      - breeze-theme
+
+  # phpMyAdmin Database Management Service
+  phpmyadmin:
+    # Use latest official phpMyAdmin image
+    image: phpmyadmin:latest
+    
+    # Dynamic container name
+    container_name: ${PROJECT_NAME}-phpmyadmin
+    
+    # Automatically restart container unless it was explicitly stopped
+    restart: unless-stopped
+    
+    # Port mapping for phpMyAdmin web interface
+    ports:
+      - "${PHPMYADMIN_PORT}:80"  # Maps host port to phpMyAdmin port 80
+    
+    # Environment variables for phpMyAdmin configuration
+    environment:
+      # MySQL server connection (uses container name as hostname)
+      PMA_HOST: ${PROJECT_NAME}-mysql
+      
+      # MySQL port (default 3306)
+      PMA_PORT: 3306
+      
+      # Enable Arbitrary server connection (allows custom host)
+      PMA_ARBITRARY: 0
+      
+      # phpMyAdmin authentication method
+      # - config: uses provided credentials below
+      # - cookie: shows login screen (recommended for security)
+      # - http: HTTP authentication
+      PMA_AUTH_TYPE: cookie
+      
+      # Optional: Set a custom title for phpMyAdmin interface
+      # PMA_TITLE: "Adminox Laravel Database Manager"
+    
+    # Dependency - ensure MySQL is healthy before starting phpMyAdmin
+    depends_on:
+      mysql:
+        condition: service_healthy
+    
+    # Connect to the same custom network
+    networks:
+      - breeze-theme
+
+# Define persistent volumes that survive container removal
+volumes:
+  mysql_data:  # Named volume for MySQL data persistence
+    # No additional configuration - uses default Docker volume driver
+
+# Define custom Docker networks for service communication
+networks:
+  breeze-theme:
+    # Dynamic network name using PROJECT_NAME variable
+    name: ${PROJECT_NAME}
+    
+    # Network driver type (bridge = single-host internal network)
+    driver: bridge

@@ -1,0 +1,105 @@
+# --------------------------
+# Docker Compose Override for Local Development
+# --------------------------
+# This file extends/overrides the main docker-compose.yml
+# It's automatically loaded by Docker Compose when it exists
+# Used for development-specific configurations
+
+# Define services that override or extend main compose file
+services:
+
+  # --------------------------
+  # App container overrides
+  # --------------------------
+  app:
+    # Override environment variables for development
+    environment:
+      # Force development environment (overrides .env.docker APP_ENV)
+      - APP_ENV=development
+      
+      # Enable debug mode for detailed error reporting
+      - APP_DEBUG=true
+    
+    # Volume mounts (extends main compose file volumes)
+    volumes:
+      # Bind mount for live code reloading during development
+      # Changes on host immediately reflect in container
+      - ./src:/var/www/html
+    
+    # Build configuration overrides
+    build:
+      context: .  # Build context (same as main)
+      dockerfile: docker/php/Dockerfile  # Dockerfile path (same as main)
+      
+      # Build arguments passed to Dockerfile during image build
+      args:
+        # Tells Dockerfile to install Xdebug for PHP debugging
+        INSTALL_XDEBUG: true
+
+  # --------------------------
+  # Queue worker for Laravel jobs
+  # --------------------------
+  # NEW SERVICE: Only exists in development override
+  queue:
+    # Build from the same PHP Dockerfile as app service
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    
+    # Dynamic container name for queue worker
+    container_name: ${PROJECT_NAME}-queue
+    
+    # Command to run Laravel queue worker
+    # Processes background jobs from the queue
+    command: php artisan queue:work
+    
+    # Mount application code for live development
+    volumes:
+      - ./src:/var/www/html
+    
+    # Dependencies - needs MySQL to be running
+    depends_on:
+      - mysql
+    
+    # Connect to the same network for service communication
+    networks:
+      - breeze-theme
+
+  # --------------------------
+  # Scheduler for Laravel cron jobs
+  # --------------------------
+  # NEW SERVICE: Only exists in development override
+  scheduler:
+    # Build from the same PHP Dockerfile
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    
+    # Dynamic container name for scheduler
+    container_name: ${PROJECT_NAME}-scheduler
+    
+    # Command to run Laravel scheduler (replaces cron)
+    # Infinite loop that runs scheduled tasks every 60 seconds
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+    
+    # Mount application code
+    volumes:
+      - ./src:/var/www/html
+    
+    # Dependencies - needs MySQL
+    depends_on:
+      - mysql
+    
+    # Network connection
+    networks:
+      - breeze-theme
+
+# Define networks in override as well
+# This ensures network is available when only override file is used
+networks:
+  breeze-theme:
+    # Dynamic network name matching main compose file
+    name: ${PROJECT_NAME}
+    
+    # Bridge driver for internal container communication
+    driver: bridge
