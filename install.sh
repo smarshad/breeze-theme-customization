@@ -1,6 +1,53 @@
 #!/bin/bash
 set -e
 
+# first check if port is already uses or not
+ENV_FILE=".env.docker"
+
+# Function: find next available port (only increments if port is actually in use)
+find_next_free_port() {
+    local port=$1
+    # Check both docker and system-wide port usage
+    while docker ps --format '{{.Ports}}' | grep -q ":$port->" || sudo lsof -i :$port >/dev/null 2>&1; do
+        port=$((port + 1))
+    done
+    echo $port
+}
+
+# Function: update key=value in .env file
+update_env_var() {
+    local key=$1
+    local value=$2
+    if grep -q "^${key}=" "$ENV_FILE"; then
+        sed -i "s/^${key}=.*/${key}=${value}/" "$ENV_FILE"
+    else
+        echo "${key}=${value}" >> "$ENV_FILE"
+    fi
+}
+
+check_and_fix_port() {
+    local key=$1
+    local port
+    port=$(grep "^${key}=" "$ENV_FILE" | cut -d '=' -f2)
+    local new_port
+    new_port=$(find_next_free_port "$port")
+
+    if [ "$new_port" != "$port" ]; then
+        echo "⚠️ Port $port is in use. Updating $key → $new_port"
+        update_env_var "$key" "$new_port"
+    else
+        echo "✅ Port $port is free for $key"
+    fi
+}
+
+echo "🔍 Checking ports in $ENV_FILE..."
+
+# Check key ports
+check_and_fix_port "NGINX_PORT"
+check_and_fix_port "PHPMYADMIN_PORT"
+check_and_fix_port "MYSQL_PORT"
+
+echo "✅ Port check complete. Using available ports."
 # ======================================================
 # Laravel Docker Skeleton Installer
 # ======================================================

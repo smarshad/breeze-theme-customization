@@ -139,7 +139,46 @@ Let's Do It Now:
     docker compose --env-file .env.docker build --no-cache app
     docker compose --env-file .env.docker up -d
 
+
+# Stop and Remove All Containers
+    docker stop $(docker ps -aq)
+    docker rm -f $(docker ps -aq)
+
+# Remove All Images
+    docker rmi -f $(docker images -q)
+
+# Remove All Volumes
+    docker volume rm $(docker volume ls -q)
+
+# Remove All Networks (except default ones)
+    docker network rm $(docker network ls -q)
+    Note : This will fail for bridge, host, and none networks — that’s normal.
+    
+# Full Cleanup in One Command
+    If you want to wipe Docker completely clean, this one command does it all
+    docker system prune -a --volumes -f
+    -a → removes all unused images, not just dangling ones
+    --volumes → removes all volumes
+    -f → skips confirmation prompt
+
 # Day 2
     Install Breeze
     composer require laravel/breeze --dev
     
+
+# Optional — Clean Everything Safely
+
+If you want to remove everything (containers, images, volumes, networks) only if they exist, use:
+
+# Stop and remove all containers
+docker ps -aq | xargs -r docker stop
+docker ps -aq | xargs -r docker rm -f
+
+# Remove all images
+docker images -q | xargs -r docker rmi -f
+
+# Remove all volumes
+docker volume ls -q | xargs -r docker volume rm
+
+# Remove all unused data (cleanup)
+docker system prune -a --volumes -f
