@@ -42,8 +42,14 @@
 
                                     <div class="form-group row">
                                         <div class="col-12">
-                                            <label for="emailaddress">Email address</label>
+                                            <label for="email">Email address</label>
                                             <input class="form-control" id="email" type="email" name="email" value="{{old('email')}}" required placeholder="john@deo.com">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <label for="mobile_no">Mobile No</label>
+                                            <input class="form-control" id="mobile_no" type="text" name="mobile_no" value="{{old('mobile_no')}}" required placeholder="1234567890">
                                         </div>
                                     </div>
 

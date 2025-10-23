@@ -48,6 +48,25 @@ check_and_fix_port "PHPMYADMIN_PORT"
 check_and_fix_port "MYSQL_PORT"
 
 echo "✅ Port check complete. Using available ports."
+
+
+# Function: check if project name already exists in docker
+check_project_name() {
+    local project_name=$1
+    if docker ps -a --format '{{.Names}}' | grep -qw "$project_name-app"; then
+        echo "⚠️ Project '$project_name' already exists as a container."
+        echo "   Please remove existing containers or use a different PROJECT_NAME."
+        exit 1
+    else
+        echo "✅ Project name '$project_name' is available."
+    fi
+}
+
+# Check project name
+PROJECT_NAME=$(grep "^PROJECT_NAME=" "$ENV_FILE" | cut -d '=' -f2)
+check_project_name "$PROJECT_NAME"
+
+echo "✅ Port and project name check complete. Using available ports and project name."
 # ======================================================
 # Laravel Docker Skeleton Installer
 # ======================================================

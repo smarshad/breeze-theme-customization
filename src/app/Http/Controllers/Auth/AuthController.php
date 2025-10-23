@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -52,9 +53,10 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'mobile_no' => $request->mobile_no,
             'password' => Hash::make($request->password),
         ]);
-        dd($user);
+        // dd($user);
         $user->save();
 
         // login user if two factor is not available
@@ -63,8 +65,24 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('dashboard1', absolute: false));
 
+    }
+
+    public function update(Request $request): RedirectResponse
+    {
+        
+        $validated = $request->validateWithBag('updatePassword', [
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', Password::defaults(), 'confirmed'],
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+
+        return back()->with('status', 'password-updated');
     }
 
     public function destroy(Request $request): Response
