@@ -202,8 +202,11 @@ Let's Do It Now:
         2. Database --> Where admin lock user permanently. 
 
 # Day 5
-
     Enable Two Factor Authentication
     user can enable/disable two_factor_auth from profile after login
+
+# Day 6
+    Change in Lockmiddleware and apply on route
+    Forgot-password screen ready and working
 
 
