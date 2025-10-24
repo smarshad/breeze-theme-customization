@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class LockScreenController extends Controller
 {
@@ -33,6 +34,7 @@ class LockScreenController extends Controller
 
     public function unlock(Request $request)
     {
+
         $request->validate([
             'password' => 'required|string',
         ]);

@@ -163,7 +163,7 @@
                                     <span>{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <button type="submit" class="btn btn-purple waves-effect waves-light">Update Profile</button>
+                                <button type="submit" class="btn btn-primary waves-effect waves-light">Update Profile</button>
                             </form>
                         </div>
                     </div>
@@ -172,8 +172,8 @@
                     <div class="col-xl-12">
                         <div class="card-box">
                             <h4 class="header-title mb-3">Update Password</h4>
-                            @if (session('status'))
-                            <div class="alert alert-success">{{session('status')}}</div>
+                            @if (session('password'))
+                            <div class="alert alert-success">{{session('password')}}</div>
                             @endif
 
                             @if ($errors->updatePassword->any())
@@ -204,6 +204,37 @@
                                     <input type="password" class="form-control col-9" id="update_password_password_confirmation" name="password_confirmation" required placeholder="Enter Confirm Password">
                                 </div>
                                 <button type="submit" class="btn btn-purple waves-effect waves-light">Change Password</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card-box">
+                            <h4 class="header-title mb-3">Two Factor Authentication</h4>
+                            <p>If you want two secure youe account enable two factor authentication.</p>
+                            @if (session('success'))
+                            <div class="alert alert-success">{!!session('success')!!}</div>
+                            @endif
+                            @if (session('error'))
+                            <div class="alert alert-error">{{session('error')}}</div>
+                            @endif
+                            @if ($errors->updatePassword->any())
+                            <div class="alert alert-danger">
+                                <ul>
+                                    @foreach ($errors->updatePassword->all() as $error)
+                                    <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            @endif
+
+                            <form method="post" action="{{ route('profile.two.factor.auth') }}" autocomplete="off" class="form-horizontal">
+                                @csrf
+                                @method('put')
+                                <input type="hidden" name="enable_two_factor_auth" value="{{$user->enable_two_factor_auth}}">
+                                <button type="submit" class="btn btn-{{$user->enable_two_factor_auth ? 'danger' : 'primary'}} waves-effect waves-light">{{$user->enable_two_factor_auth ? 'Disable' : 'Enabled'}}</button>
                             </form>
                         </div>
                     </div>

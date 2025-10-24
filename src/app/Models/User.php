@@ -20,6 +20,7 @@ class User extends Authenticatable
         'email',
         'mobile_no',
         'password',
+        'enable_two_factor_auth'
     ];
 
     /**

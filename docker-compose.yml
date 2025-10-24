@@ -26,6 +26,9 @@ services:
       
       # Password for the regular database user
       MYSQL_PASSWORD: ${DB_PASSWORD}
+
+      TZ: Asia/Kolkata
+    command: ["--default-time-zone=+05:30"]
     
     # Port mapping: host_port:container_port
     # Maps host machine port (from .env.docker) to container's MySQL port 3306
@@ -182,7 +185,9 @@ services:
     
     # Connect to the same custom network
     networks:
-      - breeze-theme
+      breeze-theme:
+        aliases:
+          - app  
 
 # Define persistent volumes that survive container removal
 volumes:

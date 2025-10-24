@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegisterWithOtp;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\LockScreenController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'showProfile'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::put('/profile/two-factor-auth', [ProfileController::class, 'twoFactorAuth'])->name('profile.two.factor.auth');
     Route::put('password', [AuthController::class, 'update'])->name('password.update');
 
     Route::get('lock',[LockScreenController::class,'show'])->name('lock.show');
@@ -32,10 +34,16 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [AuthController::class, 'showRegister'])->name('register');
+    // Route::get('register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('register', [AuthController::class, 'register']);
+    Route::get('register', [RegisterWithOtp::class, 'create'])->name('register');
+    Route::post('register', [RegisterWithOtp::class, 'store']);
+    Route::get('verify/otp', [RegisterWithOtp::class, 'verifyOtp'])->name('verify.otp');
+    Route::post('verify/otp/store', [RegisterWithOtp::class, 'verifyOtpStore'])->name('verify.otp.store');
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login']);
+    Route::get('verify/login/otp', [AuthController::class, 'verifyOtp'])->name('verify.login.otp');
+    Route::post('verify/login/otp', [AuthController::class, 'verifyOtpStore'])->name('verify.otp.login.store');
 });
 
 require __DIR__ . '/auth.php';

@@ -20,40 +20,36 @@
                             <div class="account-content mt-4">
                                 <div class="text-center mb-3">
                                     <div class="mb-3">
-                                        <img src="{{asset('backend//images/users/avatar-5.jpg')}}" class="rounded-circle img-thumbnail avatar-lg" alt="thumbnail">
+                                        <img src="{{asset('backend/images/users/avatar-5.jpg')}}" class="rounded-circle img-thumbnail avatar-lg" alt="thumbnail">
                                     </div>
-
-                                    <p class="text-muted mb-0 font-13">Enter your password to access the admin. </p>
+                                    <p class="text-muted mb-0 font-13">Please enter the 6-digit OTP we sent to your email to login your account.</p>
                                 </div>
-                                @if($errors->any())
-                                    <div class="alert alert-danger">    
-                                        <ul>
-                                            @foreach($errors->all() as $error)    
-                                                <li>{{$error}}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
+                                @if(session('error'))
+                                <div class="alert alert-danger">{!!session('error')!!}</div>
                                 @endif
-                                <form class="form-horizontal" method="POST" action="{{route('lock.unlock')}}">
+                                @if($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul>
+                                        @foreach($errors->all() as $error)
+                                        <li>{{$error}}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                                @endif
+                                <form class="form-horizontal" method="POST" action="{{route('verify.otp.login.store')}}">
                                     @csrf
                                     <div class="form-group row">
                                         <div class="col-12">
-                                            <label for="password">Password</label>
-                                            <input class="form-control" name="password" type="password" autofocus required id="password" placeholder="Enter your password">
+                                            <label for="otp">OTP</label>
+                                            <input class="form-control" maxlength="6" minlength="6" name="otp" type="text" id="otp" placeholder="Enter your OTP" autofocus required>
                                         </div>
                                     </div>
                                     <div class="form-group row text-center mt-2">
                                         <div class="col-12">
-                                            <button class="btn btn-md btn-block btn-primary waves-effect waves-light" type="submit">Log In</button>
+                                            <button class="btn btn-md btn-block btn-primary waves-effect waves-light" type="submit">Verify & Login</button>
                                         </div>
                                     </div>
                                 </form>
-                                <div class="clearfix"></div>
-                                <div class="row mt-3">
-                                    <div class="col-sm-12 text-center">
-                                        <p class="text-muted mb-0">Not you? return<a href="{{route('login')}}" class="text-dark ml-1"><b>Sign In</b></a></p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
