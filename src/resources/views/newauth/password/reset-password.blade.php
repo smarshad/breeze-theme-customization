@@ -37,6 +37,9 @@
                                 @if(session('status'))
                                 <div class="alert alert-success">{{session('status')}}</div>
                                 @endif
+                                @if(session('email'))
+                                <div class="alert alert-danger">{{session('email')}}</div>
+                                @endif
                                 <form class="form-horizontal" method="POST" action="{{ route('password.reset.new') }}">
                                     @csrf
                                     <!-- Password Reset Token -->
