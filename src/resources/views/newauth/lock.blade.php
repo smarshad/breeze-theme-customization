@@ -44,16 +44,11 @@
                                     </div>
                                     <div class="form-group row text-center mt-2">
                                         <div class="col-12">
-                                            <button class="btn btn-md btn-block btn-primary waves-effect waves-light" type="submit">Log In</button>
+                                            <button class="btn btn-md btn-block btn-primary waves-effect waves-light" type="submit">Unlock</button>
                                         </div>
                                     </div>
                                 </form>
                                 <div class="clearfix"></div>
-                                <div class="row mt-3">
-                                    <div class="col-sm-12 text-center">
-                                        <p class="text-muted mb-0">Not you? return<a href="{{route('login')}}" class="text-dark ml-1"><b>Sign In</b></a></p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

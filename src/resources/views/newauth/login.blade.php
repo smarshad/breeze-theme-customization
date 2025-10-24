@@ -44,7 +44,7 @@
 
                                         <div class="form-group row">
                                             <div class="col-12">
-                                                {{-- <a href="{{route('admin.forgot-password')}}" class="text-muted float-right"><small>Forgot your password?</small></a>--}}
+                                                <a href="{{route('password.forgot.password')}}" class="text-muted float-right"><small>Forgot your password?</small></a>
                                                 <label for="password">Password</label>
                                                 <input class="form-control" type="password" required="" id="password" name="password" required placeholder="Enter your password">
                                             </div>

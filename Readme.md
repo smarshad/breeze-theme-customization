@@ -163,20 +163,20 @@ Let's Do It Now:
 
 # Optional — Clean Everything Safely
 
-If you want to remove everything (containers, images, volumes, networks) only if they exist, use:
+    If you want to remove everything (containers, images, volumes, networks) only if they exist, use:
 
 # Stop and remove all containers
-docker ps -aq | xargs -r docker stop
-docker ps -aq | xargs -r docker rm -f
+    docker ps -aq | xargs -r docker stop
+    docker ps -aq | xargs -r docker rm -f
 
 # Remove all images
-docker images -q | xargs -r docker rmi -f
+    docker images -q | xargs -r docker rmi -f
 
 # Remove all volumes
-docker volume ls -q | xargs -r docker volume rm
+    docker volume ls -q | xargs -r docker volume rm
 
 # Remove all unused data (cleanup)
-docker system prune -a --volumes -f
+    docker system prune -a --volumes -f
 
 # Start Stop Container
     docker start my_container_name
@@ -202,6 +202,8 @@ docker system prune -a --volumes -f
         2. Database --> Where admin lock user permanently. 
 
 # Day 5
+
     Enable Two Factor Authentication
+    user can enable/disable two_factor_auth from profile after login
 
 

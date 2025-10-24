@@ -28,11 +28,13 @@
                 </a>
 
                 <!-- item-->
-                <a href="{{route('lock.show')}}" class="dropdown-item notify-item">
+                <a href="javascript:void(0);" class="dropdown-item notify-item" onclick="event.preventDefault(); document.getElementById('lockForm').submit();">
                     <i class="fe-lock"></i>
                     <span>Lock Screen</span>
                 </a>
-
+                <form id="lockForm" action="{{ route('lock.lock') }}" method="POST" style="display:none;">
+                    @csrf
+                </form>
                 <div class="dropdown-divider"></div>
 
                 <!-- item-->
