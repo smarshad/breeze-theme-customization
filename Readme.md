@@ -159,12 +159,7 @@ Let's Do It Now:
     docker system prune -a --volumes -f
     -a → removes all unused images, not just dangling ones
     --volumes → removes all volumes
-    -f → skips confirmation prompt
-
-# Day 2
-    Install Breeze
-    composer require laravel/breeze --dev
-    
+    -f → skips confirmation prompt    
 
 # Optional — Clean Everything Safely
 
@@ -182,3 +177,31 @@ docker volume ls -q | xargs -r docker volume rm
 
 # Remove all unused data (cleanup)
 docker system prune -a --volumes -f
+
+# Start Stop Container
+    docker start my_container_name
+
+# Day 1-2
+    Convert existing them into laravel and push to git repo
+
+# Day 3
+    Install Breeze
+    composer require laravel/breeze --dev
+    php artisan breeze:install blade
+    php artisan migrate
+    php artisan serve
+    Check all functionality
+
+# Day 4
+    Custommize Breeze theme pages into our existing template
+    forgot/reset password screen is pending
+    Also add lockscreen feature
+    Create Migration for it *add one field into users table is_locked*
+        Two types
+        1. Session based Where user click on lock link then add key in session is_locked :true and redirect to lock page where user only enter password.
+        2. Database --> Where admin lock user permanently. 
+
+# Day 5
+    Enable Two Factor Authentication
+
+
