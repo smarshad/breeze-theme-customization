@@ -14,7 +14,7 @@
                             <div class="account-box">
                                 <div class="account-logo-box">
                                     <div class="text-center">
-                                        <a href="{{route('login')}}">
+                                        <a href="{{route('auth.login')}}">
                                             <img src="{{ asset('backend/images/logo-dark.png')}}" alt="" height="30">
                                         </a>
                                     </div>
