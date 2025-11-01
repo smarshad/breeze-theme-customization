@@ -134,6 +134,7 @@ Day 7
             ------------------------
             ------------------------
         }
+        simply returns the array of safe input.
         The service layer doesn’t have to validate again; it just uses the already validated data.
 
         Path: app/Services/Auth/LoginService.php
