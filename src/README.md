@@ -193,3 +193,61 @@ Day 7
             └── Auth/
                 └── LoginService.php
 
+Day 8
+    Add one var in .env AUTH_WITH_OTP=true/false so we can use registeration method with or without otp
+    create helper for otp generation
+        mkdir app/Helpers
+        touch app/Helpers/helpers.php
+
+        Edit your composer.json and add under "autoload":
+        "autoload": {
+            "files": [
+                "app/Helpers/helpers.php"
+            ]
+        }
+        composer dump-autoload
+        then use $otp = generate_otp();
+
+
+    Create Register Controller
+    Create Register Service
+        +-------------------------+
+        |  User submits Register  |
+        +-----------+-------------+
+                    |
+                    v
+        +-------------------------+
+        | RegisterRequest validates|
+        +-----------+-------------+
+                    |
+                    v
+        +-------------------------+
+        | RegisterService::register|
+        +-----------+-------------+
+                    |
+                    +-- if AUTH_WITH_OTP = true
+                    |       |
+                    |       v
+                    |  Create OTP + send email
+                    |  Save user data to session
+                    |  Redirect -> verify.otp
+                    |
+                    +-- else
+                            |
+                            v
+                    Create user directly
+                    Login + redirect -> dashboard
+
+        User submits /register form
+                │
+                ▼
+        [ Controller ] → calls RegisterService
+                │
+                ▼
+        RegisterService returns redirect()->route('verify.otp')
+                │
+                ▼
+        Browser receives HTTP 302 redirect
+                │
+                ▼
+        Browser navigates to /verify/otp page
