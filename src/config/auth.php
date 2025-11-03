@@ -112,6 +112,7 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
     'otp_expiry' => env('OTP_EXPIRY_MINUTES', 10),
+    'otp_enabled' => env('AUTH_WITH_OTP', TRUE),
 
 
 ];

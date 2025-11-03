@@ -8,24 +8,36 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 class RegisterService
 {
     /**
      * Handle the service logic.
      */
-    public function handle(array $data)
+    public function handle($request)
     {
         $otp_enabled = config('auth.otp_enabled', true);
         log::info('Otp enabled ', ['otp_enabled' => $otp_enabled]);
 
         if ($otp_enabled) {
-            return $this->sendRegisterOtp($data);
+            return $this->sendRegisterOtp($request);
         }
-        return $this->registerUser($data);
+        return $this->registerUser($request);
     }
 
-    public function registerUser($request) {}
+    public function registerUser($request) {
+        $user = User::create([
+            'email' => $request->email,
+            'name' => $request->name,
+            'mobile_no' => $request->mobile_no,
+            'password' => $request->password,
+        ]);
+        // unset($users['password']);
+        Auth::login($user);
+        Log::info('User successfully Registered direct', [$request]);
+        return redirect()->route('dashboard1');
+    }
 
     public function sendRegisterOtp($request)
     {
@@ -37,7 +49,7 @@ class RegisterService
         try {
             $otp = generate_otp();
             $otp_expiry = (int) config('auth.otp_expiry', 10);
-            $email = $request['email'];
+            $email = $request->email;
             EmailOtp::updateOrCreate([
                 'email' => $email
             ], [
@@ -50,9 +62,9 @@ class RegisterService
             session(['users' =>
             [
                 'email'    => $email,
-                'name'     => $request['name'],
-                'mobile_no' => $request['mobile_no'],
-                'password' => Hash::make($request['password'])
+                'name'     => $request->name,
+                'mobile_no' => $request->mobile_no,
+                'password' => Hash::make($request->password)
             ]]);
             return redirect()->route('verify.register.otp');
         } catch (\Exception $e) {

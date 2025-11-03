@@ -27,7 +27,7 @@ class RegisterController extends Controller
 
     public function register(RegisterRequest $request): RedirectResponse
     {
-        return $this->registerService->handle($request->validated());
+        return $this->registerService->handle($request);
     }
 
     public function verifyOtpAndCreateUser(OtpRequest $request){
