@@ -8,27 +8,26 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Carbon;
-
 class LoginService
 {
 
-    public function handleLogin(array $data)
+    public function handleLogin($request)
     {
         // $validated = $request->validated();
 
-        $user = User::where('email', $data['email'])->first();
+        $user = User::where('email', $request->email)->first();
 
         if(!$user){
-            Log::warning('Login Failed: Invalid Email',['email' => $data['email']]);
+            Log::warning('Login Failed: Invalid Email',['email' => $request->email]);
             return redirect()->back()->withInput()->withErrors(['error' => 'Invalid Email']);
         }
 
         session(['users' =>[
-            'email' => $data['email'],
-            'password' => $data['password']
+            'email' => $request->email,
+            'password' => $request->password
         ]]);
 
-        return $user->enable_two_factor_auth ? $this->handleTwoFactor($data['email']) : $this->authenticateUser($data);
+        return $user->enable_two_factor_auth ? $this->handleTwoFactor($request->email) : $this->authenticateUser($request);
     }
 
     protected function handleTwoFactor($email){ 

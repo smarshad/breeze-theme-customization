@@ -251,3 +251,13 @@ Day 8
                 │
                 ▼
         Browser navigates to /verify/otp page
+
+        Create New service RegisterService/RegisterOtpService
+        Create New controller RegisterController
+        Create New request RegisterRequest
+        Remove register code from AuthController
+        Remove routes related to register from web to authroute
+
+        //////Improvement////////
+
+        Create BaseOtpService class

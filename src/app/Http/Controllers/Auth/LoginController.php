@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\Auth\LoginService;
-use App\Services\Auth\OtpService;
+use App\Services\Auth\LoginOtpService;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\OtpRequest;
 use Illuminate\Http\Request;
@@ -13,7 +13,7 @@ class LoginController extends Controller
 {
     protected $bodyCss;
 
-    public function __construct(protected LoginService $loginService, protected OtpService $otpService)
+    public function __construct(protected LoginService $loginService, protected LoginOtpService $LoginOtpService)
     {
         $this->bodyCss = 'class="authentication-bg bg-primary authentication-bg-pattern d-flex align-items-center pb-0 vh-100"';
     }
@@ -26,7 +26,7 @@ class LoginController extends Controller
 
     public function login(LoginRequest $request)
     {
-        return $this->loginService->handleLogin($request->validated());
+        return $this->loginService->handleLogin($request);
     }
 
     public function showOtpForm(Request $request)
@@ -37,6 +37,6 @@ class LoginController extends Controller
 
     public function verifyOtp(OtpRequest $request)
     {
-        return $this->otpService->handleOtp($request->validated(), $request);
+        return $this->LoginOtpService->verify($request);
     }
 }

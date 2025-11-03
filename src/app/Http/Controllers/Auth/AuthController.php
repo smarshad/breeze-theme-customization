@@ -28,45 +28,6 @@ class AuthController extends Controller
         $this->bodyCss = 'class="authentication-bg bg-primary authentication-bg-pattern d-flex align-items-center pb-0 vh-100"';
     }
 
-    public function showRegister()
-    {
-        $bodyCss = $this->bodyCss;
-        return view('newauth/register', compact('bodyCss'));
-    }
-
-
-    
-
-    public function register(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'lowercase', 'max:255', 'unique:' . User::class],
-            'mobile_no' => ['required', 'string', 'mobile_no',  'unique:' . User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
-        // create user
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'mobile_no' => $request->mobile_no,
-            'password' => Hash::make($request->password),
-        ]);
-        // dd($user);
-        $user->save();
-
-        // login user if two factor is not available
-
-        event(new Registered($user));
-
-        Auth::login($user);
-
-        return redirect(route('dashboard1', absolute: false));
-    }
-
-
-    
 
     public function update(Request $request): RedirectResponse
     {

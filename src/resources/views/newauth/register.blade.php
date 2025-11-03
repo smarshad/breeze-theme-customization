@@ -21,7 +21,9 @@
                             </div>
 
                             <div class="account-content mt-4">
-
+                                @if(session('error'))
+                                <div class="alert alert-danger">{{session('error')}}</div>
+                                @endif
                                 @if($errors->any() && $errors->count() > 0)
                                 <div class="alert alert-danger">
                                     <ul>
@@ -31,7 +33,7 @@
                                     </ul>
                                 </div>
                                 @endif
-                                <form class="form-horizontal" method="POST" action="{{ route('register') }}">
+                                <form class="form-horizontal" method="POST" action="{{ route('register.store') }}">
                                     @csrf
                                     <div class="form-group row">
                                         <div class="col-12">
