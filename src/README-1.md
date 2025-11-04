@@ -1,6 +1,15 @@
-# Day 9
-    add scope in user model scopeWhereEmail
-    create new controller Auth/PasswordController
-    create new request Auth/ForgotPasswordRequest.php/ PasswordResetRequest
-    create new service Auth/ForgotPasswordService.php
-    change folder structure Auth/otp move BaseOtpService.php/LoginOtpService.php/RegisterOtpService.php
+# CHANGELOG
+
+## [Day 9] - 2025-11-04
+### Added
+- User model scope: `scopeWhereEmail`
+- `Auth\PasswordController`
+- Form Requests: `ForgotPasswordRequest`, `PasswordResetRequest`
+- Services: `ForgotPasswordService`, `ResetPasswordService`
+
+### Changed
+- OTP folder restructured to `app/Services/Auth/Otp/`
+  - `BaseOtpService.php`
+  - `LoginOtpService.php`
+  - `RegisterOtpService.php`
+
