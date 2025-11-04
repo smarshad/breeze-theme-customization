@@ -41,7 +41,7 @@ class LoginService
        
 
         Mail::to($email)->send(new SendOtpMail($otp, 'OTP For Login'));
-        return redirect()->route('verify.login.otp');
+        return redirect()->route('login.otp.verify');
     }
 
     protected function authenticateUser($request){

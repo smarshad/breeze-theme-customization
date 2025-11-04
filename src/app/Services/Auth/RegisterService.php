@@ -66,7 +66,7 @@ class RegisterService
                 'mobile_no' => $request->mobile_no,
                 'password' => Hash::make($request->password)
             ]]);
-            return redirect()->route('verify.register.otp');
+            return redirect()->route('register.otp.show');
         } catch (\Exception $e) {
             // Log error for debugging
             Log::error('OTP email failed: ' . $e->getMessage());

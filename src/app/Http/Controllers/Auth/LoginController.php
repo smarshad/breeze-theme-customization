@@ -15,7 +15,7 @@ class LoginController extends Controller
 
     public function __construct(protected LoginService $loginService, protected LoginOtpService $LoginOtpService)
     {
-        $this->bodyCss = 'class="authentication-bg bg-primary authentication-bg-pattern d-flex align-items-center pb-0 vh-100"';
+        $this->bodyCss = getAuthPageCss();
     }
 
     public function showLogin()

@@ -37,7 +37,7 @@
                                 @if(session('status'))
                                 <div class="alert alert-success">{{session('status')}}</div>
                                 @endif
-                                <form class="form-horizontal" method="POST" action="{{ route('password.email') }}">
+                                <form class="form-horizontal" method="POST" action="{{ route('password.forgot.password') }}">
                                     @csrf
 
                                     <div class="form-group row">

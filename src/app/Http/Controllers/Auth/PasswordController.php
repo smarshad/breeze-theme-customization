@@ -17,7 +17,7 @@ class PasswordController extends Controller
     /**
      * Update the user's password.
      */
-
+dd();
     public function __construct(protected ForgotPasswordService $forgotPasswordServicefor, protected ResetPasswordService $resetPasswordService) {}
 
     public function showForgotPassword()

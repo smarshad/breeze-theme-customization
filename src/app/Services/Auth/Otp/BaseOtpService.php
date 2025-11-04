@@ -43,7 +43,7 @@ abstract class BaseOtpService
             Log::error(static::class . ': OTP expired.', ['email' => $email]);
             return back()->withInput()->with(['error' => 'The OTP has expired. Please request a new one!']);
         }
-
+        // dd($request);
         if ((string) $otp->otp !== trim((string) $request->otp)) {
             Log::error(static::class . ': Invalid OTP entered.', [
                 'email' => $email,

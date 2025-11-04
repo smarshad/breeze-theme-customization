@@ -44,7 +44,7 @@
                                     </ul>
                                 </div>
                                 @endif
-                                <form class="form-horizontal" method="POST" action="{{route('verify.register.otp.store')}}">
+                                <form class="form-horizontal" method="POST" action="{{route('register.otp.verify')}}">
                                     @csrf
                                     <div class="form-group row">
                                         <div class="col-12">

@@ -40,7 +40,7 @@
                                 @if(session('email'))
                                 <div class="alert alert-danger">{{session('email')}}</div>
                                 @endif
-                                <form class="form-horizontal" method="POST" action="{{ route('password.reset.new') }}">
+                                <form class="form-horizontal" method="POST" action="{{ route('password.update') }}">
                                     @csrf
                                     <!-- Password Reset Token -->
                                     <input type="hidden" name="token" value="{{ $request->route('token') }}">
