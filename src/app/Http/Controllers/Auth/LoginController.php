@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\Auth\LoginService;
-use App\Services\Auth\LoginOtpService;
+use App\Services\Auth\Otp\LoginOtpService;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\OtpRequest;
 use Illuminate\Http\Request;

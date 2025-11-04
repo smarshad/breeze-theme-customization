@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Auth;
+namespace App\Services\Auth\Otp;
 
 use App\Models\EmailOtp;
 use Illuminate\Support\Carbon;

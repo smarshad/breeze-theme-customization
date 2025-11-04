@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Auth;
+namespace App\Services\Auth\Otp;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,7 +9,6 @@ use App\Models\User;
 
 class RegisterOtpService extends BaseOtpService
 {
-
 
     protected function getRedirectRoute(): string
     {

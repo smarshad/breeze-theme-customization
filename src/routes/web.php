@@ -37,10 +37,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('logout', [AuthController::class, 'destroy'])->name('logout');
 });
 
-Route::middleware('guest')->group(function () {
-    
-    Route::get('reset-password/{token}', [AuthController::class, 'changePasswordForm'])->name('password.reset');
-    Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('password.reset.new');
-});
+
 
 require __DIR__ . '/auth.php';

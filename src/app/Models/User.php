@@ -43,4 +43,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    // Local scope for email
+
+    public function scopeWhereEmail($query, $email){
+        return $query->where('email', $email);
+    }
 }

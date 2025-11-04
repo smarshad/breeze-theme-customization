@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\Auth\RegisterService;
-use App\Services\Auth\RegisterOtpService;
+use App\Services\Auth\Otp\RegisterOtpService;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\Auth\OtpRequest;
 class RegisterController extends Controller

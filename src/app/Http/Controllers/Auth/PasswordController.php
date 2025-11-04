@@ -7,6 +7,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\PasswordResetRequest;
+use App\Services\Auth\ForgotPasswordService;
+use App\Services\Auth\ResetPasswordService;
 
 class PasswordController extends Controller
 {
@@ -14,36 +18,30 @@ class PasswordController extends Controller
      * Update the user's password.
      */
 
+    public function __construct(protected ForgotPasswordService $forgotPasswordServicefor, protected ResetPasswordService $resetPasswordService) {}
+
     public function showForgotPassword()
     {
         $bodyCss = getAuthPageCss();
         return view('newauth.password.forgot-password', compact('bodyCss'));
     }
 
-
-    public function sentPasswordResetLink(Request $request){
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        \Log::info('Password reset requested', [
-            'email' => $request->email,
-            'ip' => $request->ip(),
-        ]);
-
-        $status = ResetPassword::sendResetLink($request->only('email'));
-        
-        if ($status === ResetPassword::RESET_LINK_SENT) {
-            return back()->with('status', 'A password reset link has been sent to your email.');
-        } else {
-            return back()
-                ->withInput($request->only('email'))
-                ->withErrors(['email' => 'We could not find a user with that email address.']);
-        }
+    public function sentPasswordResetLink(ForgotPasswordRequest $request)
+    {
+        return $this->forgotPasswordServicefor->sentLink($request);
     }
 
+    public function changePasswordForm(Request $request)
+    {
+        $bodyCss = getAuthPageCss();
+        return view('newauth.password.reset-password', compact('bodyCss', 'request'));
+    }
 
-    
+    public function resetPassword(PasswordResetRequest $request)
+    {
+        return $this->resetPasswordService->resetPassword($request);
+    }
+
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validateWithBag('updatePassword', [
