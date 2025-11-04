@@ -11,11 +11,7 @@ use Illuminate\Validation\Rules\Password;
 
 final class PasswordController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
+    
     public function edit(): \Illuminate\View\View
     {
         $bodyCss = getAuthPageCss();
@@ -24,6 +20,7 @@ final class PasswordController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
+        // dd();
         $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::defaults(), 'confirmed'],
@@ -33,6 +30,6 @@ final class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return back()->with('status', __('passwords.updated'));
+        return back()->with('password', 'password-updated');
     }
 }

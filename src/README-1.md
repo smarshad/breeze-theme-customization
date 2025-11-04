@@ -4,7 +4,7 @@
 ### Added
 - User model scope: `scopeWhereEmail`
 - `Auth\PasswordController`
-- Form Requests: `ForgotPasswordRequest`, `PasswordResetRequest`, `UnlockService`
+- Form Requests: `ForgotPasswordRequest`, `PasswordResetRequest`, `UnlockService`, `ProfileService`
 - Services: `ForgotPasswordService`, `ResetPasswordService`, `UnlockRequest`
 
 ### Changed

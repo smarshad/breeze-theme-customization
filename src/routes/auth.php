@@ -59,5 +59,5 @@ Route::prefix('auth')->middleware('guest')->group(function () {
 
     // Reset password (via token)
     Route::get('password/reset/{token}', [ResetPasswordController::class, 'show'])->name('password.reset');
-    Route::post('password/reset', [ResetPasswordController::class, 'update'])->name('password.update');
+    Route::post('password/reset', [ResetPasswordController::class, 'update'])->name('password.reset');
 });
