@@ -4,15 +4,19 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-
+use App\Http\Requests\Auth\UnlockRequest;
+use App\Services\Auth\UnlockService;
 class LockScreenController extends Controller
 {
+
+    public function __construct(protected UnlockService $unlockService)
+    {
+    }
+
     public function show(Request $request)
     {
         $user = $request->user();
-        $bodyCss = 'class="authentication-bg bg-primary authentication-bg-pattern d-flex align-items-center pb-0 vh-100"';
+        $bodyCss = getAuthPageCss();
         // If globally locked, redirect to login with message
         if ($user->is_locked) {
             auth()->logout();
@@ -32,28 +36,9 @@ class LockScreenController extends Controller
         return redirect()->route('lock.show');
     }
 
-    public function unlock(Request $request)
+    public function unlock(UnlockRequest $request)
     {
-
-        $request->validate([
-            'password' => 'required|string',
-        ]);
-
-        $user = $request->user();
-
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'password' => ['The provided password is incorrect.'],
-            ]);
-        }
-
-        // Clear session lock
-        $request->session()->forget('locked');
-        $request->session()->regenerate();
-
-        $intended = $request->session()->pull('locked_intended_url', url('/'));
-
-        return redirect()->to($intended);
+        return $this->unlockService->unlock($request);
     }
 
     // Optional: Admin-only lock/unlock actions

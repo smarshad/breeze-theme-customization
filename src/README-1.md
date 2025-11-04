@@ -4,8 +4,8 @@
 ### Added
 - User model scope: `scopeWhereEmail`
 - `Auth\PasswordController`
-- Form Requests: `ForgotPasswordRequest`, `PasswordResetRequest`
-- Services: `ForgotPasswordService`, `ResetPasswordService`
+- Form Requests: `ForgotPasswordRequest`, `PasswordResetRequest`, `UnlockService`
+- Services: `ForgotPasswordService`, `ResetPasswordService`, `UnlockRequest`
 
 ### Changed
 - OTP folder restructured to `app/Services/Auth/Otp/`
