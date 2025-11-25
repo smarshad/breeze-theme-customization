@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\LockScreenController;
 use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 use App\Http\Controllers\Account\PasswordController;
+use App\Http\Controllers\PermissionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -24,6 +25,9 @@ Route::middleware(['auth', 'locked'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::put('/profile/two-factor-auth', [ProfileController::class, 'twoFactorAuth'])->name('profile.two.factor.auth');
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+
+    Route::resource('permissions', PermissionController::class);
+
 });
 
 Route::middleware(['auth'])->group(function () {

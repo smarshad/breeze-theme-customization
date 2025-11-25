@@ -22,6 +22,18 @@
                     </ul>
                 </li>
 
+                <li>
+                    <a href="javascript: void(0);">
+                        <i class="fe-airplay"></i>
+                        <span class="badge badge-success badge-pill float-right">2</span>
+                        <span> Permissions </span>
+                    </a>
+                    <ul class="nav-second-level" aria-expanded="false">
+                        <li><a href="{{route('permissions.index')}}">View</a></li>
+                        <li><a href="{{route('permissions.create')}}">Create</a></li>
+                    </ul>
+                </li>
+
                 {{--<li>
                     <a href="javascript: void(0);">
                         <i class="fe-file-plus"></i>
