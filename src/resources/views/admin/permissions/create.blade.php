@@ -11,11 +11,11 @@
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="javascript: void(0);">Adminox</a></li>
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">Permission</a></li>
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{__('permissions.title')}}</a></li>
                             <li class="breadcrumb-item active">New</li>
                         </ol>
                     </div>
-                    <h4 class="page-title">Permission</h4>
+                    <h4 class="page-title">{{__('permissions.title')}}</h4>
                 </div>
             </div>
         </div>
@@ -26,7 +26,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="header-title mb-3">{{ __('permissions.create_title')}}</h4>
                         <a href="{{ route('permissions.index') }}" class="btn btn-primary">
-                            Back
+                            {{__('global.back')}}
                         </a>
                     </div>
                     <x-alert />
@@ -46,7 +46,7 @@
                         </div>
                         <div class="form-group mb-0 row">
                             <div class="offset-3 col-9">
-                                <button type="submit" class="btn btn-info waves-effect waves-light">{{ __('permissions.create_button') }}</button>
+                                <button type="submit" class="btn btn-info waves-effect waves-light">{{ __('global.save') }}</button>
 
                             </div>
                         </div>

@@ -15,7 +15,7 @@ class ForgotPasswordService
     {
         $email = $request->email;
 
-        $logContext = $this->createLogContext($email, $request->ip());
+        $logContext = createLogContext($email, $request->ip());
         if ($email === '') {
             log::warning('Password reset attempted with empty email.', $logContext);
             return redirect()->back()->with(['error' => 'Empty Email']);
@@ -32,7 +32,7 @@ class ForgotPasswordService
         }
 
         if ($this->isLocked($user)) {
-            Log::warning('Password reset blocked: user locked.', $this->createLogContext($email, $request->ip(), $user->id));
+            Log::warning('Password reset blocked: user locked.', createLogContext($email, $request->ip(), $user->id));
 
             return redirect()->back()->with(['error' => 'You account is locked please contact with our team']);
         }
@@ -72,17 +72,5 @@ class ForgotPasswordService
             ->withErrors(['email' => 'Error while Sent reset password link']);
     }
 
-    protected function createLogContext(string $email, ?string $ip = null, ?int $userId = null): array
-    {
-        $ctx = [
-            'email' => $email,
-            'ip' => $ip,
-        ];
-
-        if ($userId !== null) {
-            $ctx['user_id'] = $userId;
-        }
-
-        return $ctx;
-    }
+    
 }

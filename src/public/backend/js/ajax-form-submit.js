@@ -1,6 +1,14 @@
-$(document).ready(function() {
+$(document).ready(function () {
 
-    $(document).on('submit', '.data-ajax-submit', function(e) {
+    // Global AJAX setup for CSRF + JSON
+    // ensure CSRF header for Laravel
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    $(document).on('submit', '.data-ajax-submit', function (e) {
         e.preventDefault();
 
         let form = $(this);
@@ -10,6 +18,83 @@ $(document).ready(function() {
         handleAjaxFormSubmit(action, method, formData);
     });
 
+
+
+    $(document).on('click', '.btn-delete', function (e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const id = $btn.data('id');
+        const action = $btn.data('action');
+
+        console.log('Delete clicked for id:', id, 'action:', action);
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This action cannot be undone',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (!result.value) {
+                console.log('User cancelled delete');
+                return;
+            }
+
+            const originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+
+            // Send AJAX - using method option (works with jQuery)
+            $.ajax({
+                url: action,
+                type: 'POST',                 // use POST and send _method for best compatibility
+                data: { _method: 'DELETE' },  // Laravel friendly method spoofing
+                dataType: 'json',
+                success: function (res) {
+
+                    // optional: remove table row or element (find closest row)
+                    const $row = $btn.closest('tr');
+                    if ($row.length) {
+                        // if using DataTable, use the DataTable API to remove; otherwise remove DOM row
+                        $row.fadeOut(300, function () { $(this).remove(); });
+                    } else {
+                        // if not inside table, remove parent card / item
+                        $btn.closest('.item, .list-group-item, .row').remove();
+                    }
+
+                    Swal.fire({
+                        type: 'success',
+                        title: (res && res.message) ? res.message : 'Deleted!',
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+                },
+                error: function (xhr, status, err) {
+                    // restore button UI
+                    $btn.prop('disabled', false).html(originalHtml);
+
+                    // Validation (422) or JSON message handling
+                    if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                        const firstErr = Object.values(xhr.responseJSON.errors)[0][0];
+                        Swal.fire('Error', firstErr, 'error');
+                        return;
+                    }
+
+                    const message = (xhr.responseJSON && xhr.responseJSON.message)
+                        ? xhr.responseJSON.message
+                        : 'An error occurred while deleting.';
+
+                    Swal.fire('Error', message, 'error');
+                },
+                complete: function () {
+                    // safety restore of button if not removed
+                    if ($btn && $btn.length) $btn.prop('disabled', false).html(originalHtml);
+                }
+            });
+        });
+    });
+
+
 });
 
 function handleAjaxFormSubmit(action, method, formData) {
@@ -17,10 +102,6 @@ function handleAjaxFormSubmit(action, method, formData) {
         url: action,
         method: method,
         data: formData,
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-            'Accept': 'application/json'
-        },
         success(response) {
             console.log(response);
             alert('Updated successfully!');
@@ -44,9 +125,10 @@ function showValidationErrors(errors) {
     $('.invalid-feedback').remove();
     console.log(errors);
 
-    $.each(errors, function(field, messages) {
+    $.each(errors, function (field, messages) {
         let input = $('[name="' + field + '"]');
         input.addClass('is-invalid');
         input.after('<div class="invalid-feedback">' + messages[0] + '</div>');
     });
 }
+

@@ -32,3 +32,8 @@
         // Otherwise use Laravel's normal behavior (redirect back with errors)
         parent::failedValidation($validator);
     }   
+
+# Day2 
+    Refactor Permisison controller centralised log data
+    Delete Using Ajax
+    New function in helper for log

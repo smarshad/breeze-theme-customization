@@ -11,11 +11,11 @@
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="javascript: void(0);">Adminox</a></li>
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">Permission</a></li>
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{ __('permissions.title')}}</a></li>
                             <li class="breadcrumb-item active">Edit</li>
                         </ol>
                     </div>
-                    <h4 class="page-title">Permission</h4>
+                    <h4 class="page-title">{{ __('permissions.title')}}</h4>
                 </div>
             </div>
         </div>
@@ -26,7 +26,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="header-title mb-3">{{ __('permissions.create_title')}}</h4>
                         <a href="{{ route('permissions.index') }}" class="btn btn-primary">
-                            Back
+                            {{ __('global.back')}}
                         </a>
                     </div>
                     <x-alert />
@@ -37,17 +37,17 @@
                         <div class="form-group row">
                             <label for="name" class="col-3 col-form-label">Name</label>
                             <div class="col-3">
-                                <input type="text" class="form-control" id="name" name="name" value="{{$permission->name}}" placeholder="create user">
+                                <input type="text" class="form-control" id="name" name="name" value="{{old('name',$permission->name)}}" placeholder="create user">
                             </div>
 
                             <label for="description" class="col-3 col-form-label">Description</label>
                             <div class="col-3">
-                                <input type="text" class="form-control" id="description" name="description" value="{{$permission->description}}" placeholder="create new user">
+                                <input type="text" class="form-control" id="description" name="description" value="{{ old('desccription', $permission->description)}}" placeholder="create new user">
                             </div>
                         </div>
                         <div class="form-group mb-0 row">
                             <div class="offset-3 col-9">
-                                <button type="submit" class="btn btn-info waves-effect waves-light">{{ __('permissions.update_button') }}</button>
+                                <button type="submit" class="btn btn-info waves-effect waves-light">{{ __('global.update') }}</button>
                             </div>
                         </div>
                     </form>

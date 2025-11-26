@@ -2,6 +2,46 @@
 
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
+if (!function_exists('createLogContext')) {
+    function createLogContext(string $email, ?string $ip = null, ?int $userId = null): array
+    {
+        $ctx = [
+            'email' => $email,
+            'ip' => $ip,
+        ];
+
+        if ($userId !== null) {
+            $ctx['user_id'] = $userId;
+        }
+
+        return $ctx;
+    }
+}
+if (!function_exists('logAction')) {
+    /**
+     * Centralized logging function with context & level support.
+     */
+    function logAction(string $message, string $level = 'info', array $extra = []): void
+    {
+        $user = auth()->user();
+        $email = $user?->email ?? 'guest';
+        $ip = request()->ip();
+        $userId = $user?->id;
+
+        // Base context
+        $context = createLogContext($email, $ip, $userId);
+
+        // Merge any extra data
+        $context = array_merge($context, $extra);
+
+        // Send to log
+        Log::$level($message, $context);
+    }
+}
 
 if (!function_exists('generate_otp')) {
     /**
@@ -21,7 +61,7 @@ if (!function_exists('generate_otp')) {
 if (!function_exists('getAuthPageCss')) {
     /**
      * @return string
-    */
+     */
 
     function getAuthPageCss(): string
     {
@@ -34,8 +74,8 @@ if (!function_exists('generate_uuid')) {
      * Generate a UUID (v4).
      *
      * @return string
-    */
-    
+     */
+
     function generate_uuid(): string
     {
         return (string) Str::uuid();
