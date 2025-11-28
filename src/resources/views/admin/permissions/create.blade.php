@@ -38,7 +38,12 @@
                             <div class="col-3">
                                 <input type="text" class="form-control" id="name" name="name" value="{{old('name')}}" placeholder="create user">
                             </div>
-
+                            <label for="module" class="col-3 col-form-label">Module</label>
+                            <div class="col-3">
+                                <input type="text" class="form-control" id="module" name="module" value="{{old('module')}}" placeholder="Users/Orders">
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <label for="description" class="col-3 col-form-label">Description</label>
                             <div class="col-3">
                                 <input type="text" class="form-control" id="description" name="description" value="{{old('description')}}" placeholder="create new user">

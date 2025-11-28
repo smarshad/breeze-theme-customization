@@ -31,15 +31,20 @@
                     </div>
                     <x-alert />
 
-                    <form id="editRoleForm" action="{{ route('permissions.update', $permission) }}" method="POST" class="data-ajax-submit">
+                    <form action="{{ route('permissions.update', $permission) }}" method="POST" class="data-ajax-submit">
                         @csrf
                         @method('PUT')
                         <div class="form-group row">
                             <label for="name" class="col-3 col-form-label">Name</label>
                             <div class="col-3">
-                                <input type="text" class="form-control" id="name" name="name" value="{{old('name',$permission->name)}}" placeholder="create user">
+                                <input type="text" class="form-control" id="name" name="name" value="{{old('name', $permission->name)}}" placeholder="create user">
                             </div>
-
+                            <label for="module" class="col-3 col-form-label">Module</label>
+                            <div class="col-3">
+                                <input type="text" class="form-control" id="module" name="module" value="{{old('module', $permission->module)}}" placeholder="Users/Orders">
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <label for="description" class="col-3 col-form-label">Description</label>
                             <div class="col-3">
                                 <input type="text" class="form-control" id="description" name="description" value="{{ old('desccription', $permission->description)}}" placeholder="create new user">

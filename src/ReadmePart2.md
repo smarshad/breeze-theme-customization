@@ -35,5 +35,17 @@
 
 # Day2 
     Refactor Permisison controller centralised log data
+    Add one column into permission table (module)
+    drop unique([name,guard_name]) and add('name','module', 'guard_name')
+    Change Validation store and update permission request
+    Create Permission model and extend with spatie permission model
+    change config/permission.php change model to our newly created model
+    clear cache
     Delete Using Ajax
     New function in helper for log
+    Create Role Controller (resource)
+    Create Views for role
+    add route for roles
+    add menu in left
+    change in common ajax-form-submit.js if (field === 'permissions') {$('.alert-danger').html(messages[0]).show();}
+    complete CRUD Role module using AJAX

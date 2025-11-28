@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 use App\Http\Controllers\Account\PasswordController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\RoleController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -27,6 +28,7 @@ Route::middleware(['auth', 'locked'])->group(function () {
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
     Route::resource('permissions', PermissionController::class);
+    Route::resource('roles', RoleController::class);
 
 });
 

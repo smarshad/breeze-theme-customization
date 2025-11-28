@@ -1,3 +1,6 @@
+<div class="alert alert-danger" style="display: none;"></div>
+<div class="alert alert-success" style="display: none;"></div>
+
 @if (session('status'))
     <div class="alert alert-success">
         {{ session('status') }}

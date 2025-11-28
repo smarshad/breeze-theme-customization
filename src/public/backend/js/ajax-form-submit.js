@@ -10,7 +10,6 @@ $(document).ready(function () {
 
     $(document).on('submit', '.data-ajax-submit', function (e) {
         e.preventDefault();
-
         let form = $(this);
         let action = form.attr('action');
         let method = form.attr('method') || 'POST';
@@ -103,11 +102,14 @@ function handleAjaxFormSubmit(action, method, formData) {
         method: method,
         data: formData,
         success(response) {
-            console.log(response);
-            alert('Updated successfully!');
+            console.log('response:', response, 'formData:', formData);
+            alert(response.message)
+            if(response.redirect != undefined){
+                window.location.href = response.redirect;
+            }
         },
         error(xhr) {
-            console.log(xhr.responseJSON);
+            // console.log(xhr.responseJSON);
 
             if (xhr.status === 422) {
                 // Laravel validation error
@@ -120,15 +122,22 @@ function handleAjaxFormSubmit(action, method, formData) {
 }
 
 function showValidationErrors(errors) {
-    // Clear previous
     $('.is-invalid').removeClass('is-invalid');
     $('.invalid-feedback').remove();
-    console.log(errors);
-
+    $('.alert-danger, .alert-success').html('').hide();
     $.each(errors, function (field, messages) {
-        let input = $('[name="' + field + '"]');
-        input.addClass('is-invalid');
-        input.after('<div class="invalid-feedback">' + messages[0] + '</div>');
+        console.log('Field:', field, 'Messages:', messages);
+        let input;
+        // Handle different field types
+        if (field === 'permissions') {
+            $('.alert-danger').html(messages[0]).show();
+        } else {
+            // Regular fields
+            input = $('[name="' + field + '"]');
+            if (input.length > 0) {
+                input.addClass('is-invalid');
+                input.after('<div class="invalid-feedback">' + messages[0] + '</div>');
+            }
+        }
     });
 }
-

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Validation\Rule;
 
-class UpdatePermissionRequest extends BaseFormRequest
+class StoreRoleRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,24 +21,16 @@ class UpdatePermissionRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        // get route parameter (could be model or id)
-        $permission = $this->route('permission');
-
-        // extract the id whether $permission is a model or a scalar
-        $permissionId = is_object($permission) ? $permission->getKey() : (int) $permission;
         return [
             'name' => [
                 'required',
                 'string',
                 'max:25',
-                Rule::unique('permissions')
-                    ->where('guard_name', $this->input('guard_name', 'web'))
-                    ->where('module', $this->input('module'))
-                    ->ignore($permissionId)
+                Rule::unique('roles', 'name')->ignore($this->route('role'))
             ],
-            'module' => ['required', 'string', 'max:255'],
-            'guard_name' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:55'],
+            'permissions' => ['required', 'array', 'min:1'],
+            'permissions.*' => ['exists:permissions,id'], // Validate each permission exists in database
         ];
     }
 
@@ -47,8 +39,10 @@ class UpdatePermissionRequest extends BaseFormRequest
         return [
             'name.required' => 'The permission name is required.',
             'name.max' => 'The permission name may not be greater than 25 characters.',
-            'module.required' => 'The module name is required.',
-            'module.max' => 'The module name may not be greater than 255 characters.',
+            'permissions.required' => 'Please select at least one permission.',
+            'permissions.min' => 'Please select at least one permission.',
+            'permissions.array' => 'Permissions must be an array.',
+            'permissions.*.exists' => 'One or more selected permissions are invalid.',
         ];
     }
 }

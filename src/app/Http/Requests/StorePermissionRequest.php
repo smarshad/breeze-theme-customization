@@ -22,7 +22,16 @@ class StorePermissionRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:25', Rule::unique('permissions', 'name')],
+            'name' => [
+                'required',
+                'string',
+                'max:25',
+                Rule::unique('permissions')
+                    ->where('guard_name', $this->input('guard_name', 'web'))
+                    ->where('module', $this->input('module'))
+            ],
+            'module' => ['required', 'string', 'max:255'],
+            'guard_name' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:55'],
         ];
     }
@@ -32,7 +41,8 @@ class StorePermissionRequest extends BaseFormRequest
         return [
             'name.required' => 'The permission name is required.',
             'name.max' => 'The permission name may not be greater than 25 characters.',
+            'module.required' => 'The module name is required.',
+            'module.max' => 'The module name may not be greater than 255 characters.',
         ];
     }
-
 }

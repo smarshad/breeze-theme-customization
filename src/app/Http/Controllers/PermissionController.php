@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
 use App\Http\Requests\StorePermissionRequest;
 use App\Http\Requests\UpdatePermissionRequest;
 
@@ -21,14 +21,17 @@ class PermissionController extends Controller
 
     public function store(StorePermissionRequest $request)
     {
+
         $permission = Permission::create([
             'name'        => $request->name,
             'description' => $request->description,
+            'module' => $request->module,
         ]);
 
         logAction('Permission Created', 'info', [
             'permission_id'   => $permission->id,
             'permission_name' => $permission->name,
+            'permission_module' => $permission->module,
         ]);
 
         return redirect()->route('permissions.index')
@@ -67,10 +70,10 @@ class PermissionController extends Controller
             return response()->json(['message' => 'Updated successfully']);
         }
         // Save old values
-        $old = $permission->only(['name', 'description']);
+        $old = $permission->only(['name', 'description', 'module']);
 
         // Update
-        $permission->update($request->only(['name', 'description']));
+        $permission->update($request->only(['name', 'description', 'module']));
 
         // Log
         logAction('Permission Updated', 'info', [
