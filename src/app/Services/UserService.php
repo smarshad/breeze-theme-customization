@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\UserDTO;
+use App\Models\Permission;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Illuminate\Pagination\Paginator;
@@ -70,7 +71,7 @@ class UserService
         }
 
         // Sync permissions if provided
-        if ($dto->getPermissions() !== null) {
+        if ($dto->getPermissions() !== NULL) {
             $user->syncPermissions($dto->getPermissions());
         }
 
@@ -98,7 +99,7 @@ class UserService
         }
 
         // Check if roles are IDs or names
-        $firstRole = $roles[0] ?? null;
+        $firstRole = $roles[0] ?? NULL;
 
         if (is_numeric($firstRole)) {
             // Roles are IDs, get role models
@@ -118,7 +119,7 @@ class UserService
         }
 
         // Check if roles are IDs or names
-        $firstRole = $roles[0] ?? null;
+        $firstRole = $roles[0] ?? NULL;
 
         if (is_numeric($firstRole)) {
             // Treat as IDs (string or int)
@@ -144,7 +145,24 @@ class UserService
         // Manually clear roles/permissions before soft delete
         $user->syncRoles([]);
         $user->syncPermissions([]); // optional if you use direct perms
-        logAction('user deleted:', 'info', ['user' => $dto->toArray(), 'role'=>$user->hasRole('Super Admin')]);
+        logAction('user deleted:', 'info', ['user' => $dto->toArray(), 'role' => $user->hasRole('Super Admin')]);
         return $user->delete();
+    }
+
+    public function assignPermissions(User $user, array $selectedPermissions): User
+    {
+        logAction('assignPermissions user:', 'info', ['user' => $user->toArray()]);
+        $firstPermission = $selectedPermissions[0] ?? NULL;
+
+        if (is_numeric($firstPermission)) {
+            // Treat as IDs (string or int)
+            $permissionModels = Permission::whereIn('id', $selectedPermissions)->get();
+        } else {
+            // Treat as names
+            $permissionModels = Permission::whereIn('name', $selectedPermissions)->get();
+        }
+        $user->syncPermissions($permissionModels);
+
+        return $user->load(['roles', 'permissions']);
     }
 }

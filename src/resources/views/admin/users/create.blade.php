@@ -52,7 +52,6 @@
                             <div class="col-3">
                                 <input type="password" class="form-control" id="password" name="password" value="" placeholder="password" autocomplete="FALSE">
                             </div>
-                            
                         </div>
                         <div class="form-group row">
                             <label for="role" class="col-3 col-form-label">Select Role</label>
@@ -79,7 +78,6 @@
                         <div class="form-group mb-0 row">
                             <div class="offset-3 col-9">
                                 <button type="submit" class="btn btn-info waves-effect waves-light">{{ __('global.save') }}</button>
-
                             </div>
                         </div>
                     </form>

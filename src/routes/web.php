@@ -10,6 +10,7 @@ use App\Http\Controllers\Account\PasswordController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserPermissionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,6 +32,8 @@ Route::middleware(['auth', 'locked'])->group(function () {
     Route::resource('permissions', PermissionController::class);
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);
+    Route::get('users/{user}/permissions', [UserPermissionController::class, 'edit'])->name('users.permissions');
+    Route::put('users/{user}/permissions', [UserPermissionController::class, 'update'])->name('users.permissions.update');
 
 });
 

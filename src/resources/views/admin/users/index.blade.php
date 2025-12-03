@@ -51,9 +51,10 @@
                                         <th>Name</th>
                                         <th>Role</th>
                                         <th>Permissions Count</th>
-                                        <th>Description</th>
-                                        <th>Guard Name</th>
+                                        <th>Locked</th>
+                                        <th>Last Login</th>
                                         <th>Created At</th>
+                                        <th>Created By</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -64,13 +65,15 @@
                                     <td>{{$loop->iteration}}</td>
                                     <td>{{$user->name}}</td>
                                     <td>{{$user->roles->pluck('name')->implode(', ')}}</td>
-                                    <td>{{$user->permissions_count}}</td>
-                                    <td>{{$user->description}}</td>
-                                    <td>{{$user->guard_name}}</td>
+                                    <td>{{$user->permissions->pluck('name')->implode(', ')}}</td>
+                                    <td>{{$user->is_locked}}</td>
+                                    <td>{{$user->last_login_at}}</td>
+                                    <td>{{$user->creator->name}}</td>
                                     <td>{{\Carbon\Carbon::parse($user->created_at)->format('d M, Y')}}</td>
                                     <td>
                                         <div class="button-list d-flex align-items-center gap-2">
                                             <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-info">{{ __('global.update') }}</a>
+                                            <a href="{{ route('users.permissions', $user) }}" class="btn btn-sm btn-primary">{{ __('users.view_permissions') }}</a>
                                             <a href="javascript:void(0)" data-action="{{ route('users.destroy', $user) }}" class="btn btn-sm btn-danger btn-delete" data-id="{{$user->id}}">{{ __('global.delete') }}</a>
                                         </div>
                                     </td>

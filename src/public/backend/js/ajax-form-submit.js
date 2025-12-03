@@ -14,6 +14,15 @@ $(document).ready(function () {
         let action = form.attr('action');
         let method = form.attr('method') || 'POST';
         let formData = form.serialize();
+
+        if(action == undefined || action == ''){
+            alert('Action Missing');
+            return false;
+        }
+        if(formData == undefined || formData == ''){
+            alert('FormData Missing');
+            return false;
+        }
         handleAjaxFormSubmit(action, method, formData);
     });
 

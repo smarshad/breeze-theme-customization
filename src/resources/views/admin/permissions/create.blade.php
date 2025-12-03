@@ -52,7 +52,6 @@
                         <div class="form-group mb-0 row">
                             <div class="offset-3 col-9">
                                 <button type="submit" class="btn btn-info waves-effect waves-light">{{ __('global.save') }}</button>
-
                             </div>
                         </div>
                     </form>

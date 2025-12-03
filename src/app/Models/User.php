@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes, HasRoles;
@@ -49,7 +50,8 @@ class User extends Authenticatable
 
     // Local scope for email
 
-    public function scopeWhereEmail($query, $email){
+    public function scopeWhereEmail($query, $email)
+    {
         return $query->where('email', $email);
     }
 
@@ -61,4 +63,8 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function loginHistory()
+    {
+        return $this->hasMany(LoginHistory::class);
+    }
 }

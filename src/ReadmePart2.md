@@ -159,5 +159,40 @@ The Views are the final consumer of the data prepared by the Controller.
 | `create.blade.php` | Displays the form for creating a new record. | `create()` | `$roles` (Supporting data) |
 | `edit.blade.php` | Displays the form for updating an existing record. | `edit()` | `$user` (Single Model), `$roles` (Supporting data) |
 
-By following this detailed, step-by-step process, you ensure a clean separation of concerns and a highly maintainable codebase.
+## Phase 4: new Migration for(login history and show last login)
+    1. add two field in users table last_login_at and current_login_at
+    2. create new table login_histories (id,user_id,login_at,ip_address,user_agent,created_at,updated_at)
+
+## Phase 5: event listner for update last_login_at and current_login_at
+    php artisan make:listener LogUserLogin --event=Illuminate\Auth\Events\Login
+    `app/Listeners/LogUserLogin.php`
+    public function handle(Login $event): void
+    {
+        $user = $event->user;
+
+        // Move current login to last login
+        $user->last_login_at = $user->current_login_at;
+
+        // Set new login time
+        $user->current_login_at = now();
+
+        $user->save();
+
+        // Save login history
+        LoginHistory::create([
+            'user_id'    => $user->id,
+            'login_at'   => now(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
+## Phase 6: create new UI for assigning permision to user
+    create new controller UserPermissionController
+    create new request UserPermissionRequest
+    add new function in UserService
+        assignPermissions
+    Also at the time of assigning permission to user checked existing permission via direct permission assign or by role
+        $userDirectPermissions = $user->getDirectPermissions()->pluck('id')->toArray();
+        $userRolePermissions   = $user->getPermissionsViaRoles()->pluck('id')->toArray();
 

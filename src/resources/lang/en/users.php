@@ -10,5 +10,9 @@ return [
     'all'           => "View All $title"."s",
     'not_found'     => "Invalid $title / No Record Found",
     'title'         => "$title",
+    'permission'    => "Permissions",
+    'manage_permission'=> "Manage Permissions",
+    'view_permissions'=> "View Permission",
+    'update_permission'=> "Update Permission",
 ];
 

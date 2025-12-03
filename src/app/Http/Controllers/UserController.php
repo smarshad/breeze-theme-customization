@@ -40,9 +40,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    /**
-     * Store a newly created user
-     */
+
     public function store(StoreUserRequest $request): JsonResponse
     {
         // Debug: Log what's coming in
