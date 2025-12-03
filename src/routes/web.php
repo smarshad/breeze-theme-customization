@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\LockScreenController;
 use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 use App\Http\Controllers\Account\PasswordController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -34,6 +35,9 @@ Route::middleware(['auth', 'locked'])->group(function () {
     Route::resource('users', UserController::class);
     Route::get('users/{user}/permissions', [UserPermissionController::class, 'edit'])->name('users.permissions');
     Route::put('users/{user}/permissions', [UserPermissionController::class, 'update'])->name('users.permissions.update');
+    
+    // Master--Catgories
+    Route::put('categories', [CategoryController::class, 'update'])->name('category.index');
 
 });
 
