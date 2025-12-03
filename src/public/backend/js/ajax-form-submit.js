@@ -47,7 +47,7 @@ $(document).ready(function () {
             $.ajax({
                 url: action,
                 type: 'POST',                 // use POST and send _method for best compatibility
-                data: { _method: 'DELETE' },  // Laravel friendly method spoofing
+                data: { _method: 'DELETE' ,id:id},  // Laravel friendly method spoofing
                 dataType: 'json',
                 success: function (res) {
 
@@ -109,11 +109,12 @@ function handleAjaxFormSubmit(action, method, formData) {
             }
         },
         error(xhr) {
-            // console.log(xhr.responseJSON);
-
+            const data = xhr.responseJSON;
             if (xhr.status === 422) {
                 // Laravel validation error
-                showValidationErrors(xhr.responseJSON.errors);
+                showValidationErrors(data.errors);
+            } else if(data.success != undefined && data.success == false && (data.message != undefined || data.error != undefined)){
+                alert(`${data.message}\n${data.error}`);
             } else {
                 alert('An error occurred.');
             }

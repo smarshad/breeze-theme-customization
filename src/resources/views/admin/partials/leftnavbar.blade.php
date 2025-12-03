@@ -33,7 +33,17 @@
                         <li><a href="{{route('permissions.create')}}">Create</a></li>
                     </ul>
                 </li>
-
+                <li>
+                    <a href="javascript: void(0);">
+                        <i class="fe-airplay"></i>
+                        <span class="menu-arrow"></span>
+                        <span> Users </span>
+                    </a>
+                    <ul class="nav-second-level" aria-expanded="false">
+                        <li><a href="{{route('users.index')}}">View</a></li>
+                        <li><a href="{{route('users.create')}}">Create</a></li>
+                    </ul>
+                </li>
                 <li>
                     <a href="javascript: void(0);">
                         <i class="fe-airplay"></i>

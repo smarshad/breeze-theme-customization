@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
-
+use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -20,6 +21,8 @@ class User extends Authenticatable
         'email',
         'mobile_no',
         'password',
+        'role_id',
+        'created_by',
         'enable_two_factor_auth'
     ];
 
@@ -49,4 +52,13 @@ class User extends Authenticatable
     public function scopeWhereEmail($query, $email){
         return $query->where('email', $email);
     }
+
+    /**
+     * Relationship to the user who created this user
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
 }

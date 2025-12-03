@@ -21,11 +21,11 @@
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="javascript: void(0);">Adminox</a></li>
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{__('roles.title')}}</a></li>
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{__('users.title')}}</a></li>
                             <li class="breadcrumb-item active">All</li>
                         </ol>
                     </div>
-                    <h4 class="page-title">{{__('roles.title')}}</h4>
+                    <h4 class="page-title">{{__('users.title')}}</h4>
                 </div>
             </div>
         </div>
@@ -34,8 +34,8 @@
             <div class="col-md-12">
                 <div class="card-box">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="header-title mb-3">{{ __('roles.all') }}</h4>
-                        <a href="{{ route('roles.create') }}"
+                        <h4 class="header-title mb-3">{{ __('users.all') }}</h4>
+                        <a href="{{ route('users.create') }}"
                             class="btn btn-primary btn-sm">
                             + {{__('global.new')}}
                         </a>
@@ -49,6 +49,7 @@
                                     <tr>
                                         <th>Sr No</th>
                                         <th>Name</th>
+                                        <th>Role</th>
                                         <th>Permissions Count</th>
                                         <th>Description</th>
                                         <th>Guard Name</th>
@@ -57,19 +58,20 @@
                                     </tr>
                                 </thead>
                             <tbody>
-                                @if($roles->isNotEmpty())
-                                @foreach($roles as $role)
+                                @if($users->isNotEmpty())
+                                @foreach($users as $user)
                                 <tr>
                                     <td>{{$loop->iteration}}</td>
-                                    <td>{{$role->name}}</td>
-                                    <td>{{$role->permissions->pluck('name')->implode(', ')}}</td>
-                                    <td>{{$role->description}}</td>
-                                    <td>{{$role->guard_name}}</td>
-                                    <td>{{\Carbon\Carbon::parse($role->created_at)->format('d M, Y')}}</td>
+                                    <td>{{$user->name}}</td>
+                                    <td>{{$user->roles->pluck('name')->implode(', ')}}</td>
+                                    <td>{{$user->permissions_count}}</td>
+                                    <td>{{$user->description}}</td>
+                                    <td>{{$user->guard_name}}</td>
+                                    <td>{{\Carbon\Carbon::parse($user->created_at)->format('d M, Y')}}</td>
                                     <td>
                                         <div class="button-list d-flex align-items-center gap-2">
-                                            <a href="{{ route('roles.edit', $role) }}" class="btn btn-sm btn-info">{{ __('global.update') }}</a>
-                                            <a href="javascript:void(0)" data-action="{{ route('roles.destroy', $role) }}" class="btn btn-sm btn-danger btn-delete" data-id="{{$role->id}}">{{ __('global.delete') }}</a>
+                                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-info">{{ __('global.update') }}</a>
+                                            <a href="javascript:void(0)" data-action="{{ route('users.destroy', $user) }}" class="btn btn-sm btn-danger btn-delete" data-id="{{$user->id}}">{{ __('global.delete') }}</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -77,7 +79,7 @@
                                 @endif
                             </tbody>
                         </table>
-                        {{$roles->links()}}
+                        {{$users->links()}}
                     </div>
                 </div>
             </div>
