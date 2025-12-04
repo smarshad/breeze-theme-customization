@@ -2,11 +2,18 @@
 
 @push('styles')
 <link href="{{asset('backend/libs/sweetalert2/sweetalert2.min.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{asset('backend/libs/datatables/dataTables.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{asset('backend/libs/datatables/buttons.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{asset('backend/libs/datatables/responsive.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
+
 @endpush
 
 @push('scripts')
 <script src="{{asset('backend/libs/sweetalert2/sweetalert2.min.js')}}"></script>
 <script src="{{asset('backend/js/pages/sweet-alerts.init.js')}}"></script>
+
+<script src="{{asset('backend/libs/datatables/jquery.dataTables.min.js')}}"></script>
+<script src="{{asset('backend/libs/datatables/dataTables.bootstrap4.min.js')}}"></script>
 @endpush
 
 @section('content')
@@ -21,68 +28,49 @@
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="javascript: void(0);">Adminox</a></li>
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{__('users.title')}}</a></li>
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{__('category.title')}}</a></li>
                             <li class="breadcrumb-item active">All</li>
                         </ol>
                     </div>
-                    <h4 class="page-title">{{__('users.title')}}</h4>
+                    <h4 class="page-title">{{__('category.title')}}</h4>
                 </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <div class="card-box">
+                <div class="card-box table-responsive">
+                    <input type="hidden" id="listRoute" value="{{route('category.list')}}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="header-title mb-3">{{ __('users.all') }}</h4>
-                        <a href="{{ route('users.create') }}"
-                            class="btn btn-primary btn-sm">
+                        <h4 class="header-title mb-3">{{ __('category.all') }}</h4>
+                        <button
+                            class="btn btn-primary btn-sm openModel"
+                            data-size="lg"
+                            data-title="{{__('global.new')}} {{__('category.title')}}"
+                            data-footer='<button type="submit" class="btn btn-primary waves-effect waves-light js-submit-btn">{{ __("global.new") }}</button> <button type="button" class="btn btn-info waves-effect waves-light" data-dismiss="modal">{{ __("global.close") }}</button>'
+                            data-url="{{ route('category.create') }}">
                             + {{__('global.new')}}
-                        </a>
+                        </button>
                     </div>
                     <x-alert />
 
                     <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead class="thead-light">
-                                <thead>
-                                    <tr>
-                                        <th>Sr No</th>
-                                        <th>Name</th>
-                                        <th>Role</th>
-                                        <th>Permissions Count</th>
-                                        <th>Locked</th>
-                                        <th>Last Login</th>
-                                        <th>Created At</th>
-                                        <th>Created By</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                            <tbody>
-                                @if($users->isNotEmpty())
-                                @foreach($users as $user)
+                        <table id="datatable" class="table table-bordered  dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                            <thead>
                                 <tr>
-                                    <td>{{$loop->iteration}}</td>
-                                    <td>{{$user->name}}</td>
-                                    <td>{{$user->roles->pluck('name')->implode(', ')}}</td>
-                                    <td>{{$user->permissions->pluck('name')->implode(', ')}}</td>
-                                    <td>{{$user->is_locked}}</td>
-                                    <td>{{$user->last_login_at}}</td>
-                                    <td>{{$user->creator->name}}</td>
-                                    <td>{{\Carbon\Carbon::parse($user->created_at)->format('d M, Y')}}</td>
-                                    <td>
-                                        <div class="button-list d-flex align-items-center gap-2">
-                                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-info">{{ __('global.update') }}</a>
-                                            <a href="{{ route('users.permissions', $user) }}" class="btn btn-sm btn-primary">{{ __('users.view_permissions') }}</a>
-                                            <a href="javascript:void(0)" data-action="{{ route('users.destroy', $user) }}" class="btn btn-sm btn-danger btn-delete" data-id="{{$user->id}}">{{ __('global.delete') }}</a>
-                                        </div>
-                                    </td>
+                                    <th>Sr No</th>
+                                    <th>Category</th>
+                                    <th>Slug</th>
+                                    <th>Description</th>
+                                    <th>Color Code</th>
+                                    <th>Is Active</th>
+                                    <th>Created At</th>
+                                    <th>Created By</th>
+                                    <th>Action</th>
                                 </tr>
-                                @endforeach
-                                @endif
+                            <tbody>
                             </tbody>
                         </table>
-                        {{$users->links()}}
                     </div>
                 </div>
             </div>
@@ -91,5 +79,6 @@
 </div>
 @endsection
 @push('scripts')
+<script src="{{ asset('backend/js/manage-category.js') }}"></script>
 <script src="{{ asset('backend/js/ajax-form-submit.js') }}"></script>
 @endpush

@@ -16,7 +16,9 @@
     <link href="{{ asset('backend/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bootstrap-stylesheet" />
     <link href="{{ asset('backend/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('backend/css/app.min.css') }}" rel="stylesheet" type="text/css"  id="app-stylesheet" />
-
+    <style>
+        .pt-10{padding-top: 10px;}
+    </style>
 </head>
 
 <body>
@@ -35,6 +37,7 @@
         <!-- Footer Start -->
         @include('admin.partials.footer')
         <!-- end Footer -->
+        @include('admin.includes.modal')
     </div>
     <!-- end page -->
 

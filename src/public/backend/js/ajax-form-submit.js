@@ -15,11 +15,11 @@ $(document).ready(function () {
         let method = form.attr('method') || 'POST';
         let formData = form.serialize();
 
-        if(action == undefined || action == ''){
+        if (action == undefined || action == '') {
             alert('Action Missing');
             return false;
         }
-        if(formData == undefined || formData == ''){
+        if (formData == undefined || formData == '') {
             alert('FormData Missing');
             return false;
         }
@@ -56,7 +56,7 @@ $(document).ready(function () {
             $.ajax({
                 url: action,
                 type: 'POST',                 // use POST and send _method for best compatibility
-                data: { _method: 'DELETE' ,id:id},  // Laravel friendly method spoofing
+                data: { _method: 'DELETE', id: id },  // Laravel friendly method spoofing
                 dataType: 'json',
                 success: function (res) {
 
@@ -113,8 +113,21 @@ function handleAjaxFormSubmit(action, method, formData) {
         success(response) {
             console.log('response:', response, 'formData:', formData);
             alert(response.message)
-            if(response.redirect != undefined){
+            if (response.redirect != undefined) {
                 window.location.href = response.redirect;
+            }
+            
+            if (response.callback != undefined) {
+                // initList(response.callback);
+
+                // If callback is a URL and you want to change the list URL:
+                // table.ajax.url(response.callback).load();
+                // If you just want to reload current data:
+                if ($.fn.DataTable.isDataTable('#datatable')) {
+                    $('#datatable').DataTable().ajax.reload(null, false); 
+                }
+                
+                $('#ajaxModal').modal('hide');
             }
         },
         error(xhr) {
@@ -122,7 +135,7 @@ function handleAjaxFormSubmit(action, method, formData) {
             if (xhr.status === 422) {
                 // Laravel validation error
                 showValidationErrors(data.errors);
-            } else if(data.success != undefined && data.success == false && (data.message != undefined || data.error != undefined)){
+            } else if (data.success != undefined && data.success == false && (data.message != undefined || data.error != undefined)) {
                 alert(`${data.message}\n${data.error}`);
             } else {
                 alert('An error occurred.');
@@ -151,3 +164,62 @@ function showValidationErrors(errors) {
         }
     });
 }
+
+$(document).on('click', '.openModel', function (e) {
+    e.preventDefault();
+
+    var url = $(this).data('url');
+    var title = $(this).data('title') || '';
+    var size = $(this).data('size') || 'md'; // default = medium
+    var footerHtml = $(this).data('footer') || '';
+
+    var $modal = $('#ajaxModal');
+    var $dialog = $('#ajaxModalDialog');
+    var $modalBody = $modal.find('.js-modal-body');
+    var $modalTitle = $modal.find('.js-modal-title');
+    var $loader = $modal.find('.js-modal-loader');
+    var $footer = $modal.find('.js-modal-footer');
+
+    // Clear previous size classes
+    $dialog.removeClass('modal-sm modal-lg modal-xl');
+
+    // Add new size class
+    if (size === 'sm') $dialog.addClass('modal-sm');
+    if (size === 'lg') $dialog.addClass('modal-lg');
+    if (size === 'xl') $dialog.addClass('modal-xl');
+
+    // Set title + show loader
+    $modalTitle.text(title);
+    $loader.show();
+    $modalBody.html('');
+
+    // Open modal
+    $modal.modal('show');
+
+    // Load content
+    $.get(url)
+        .done(function (html) {
+            $loader.hide();
+            $modalBody.html(html);
+            $footer.html(footerHtml);
+        })
+        .fail(function () {
+            $loader.hide();
+            $modalBody.html('<p class="text-danger">Failed to load content.</p>');
+        });
+});
+
+$(document).on('click', '.js-submit-btn', function (e) {
+    e.preventDefault();
+
+    // find form inside the modal and trigger submit
+    let $modal = $('#ajaxModal'); // or your modal id
+    let $form  = $modal.find('form.data-ajax-submit').first();
+
+    if ($form.length === 0) {
+        alert('Form not found in modal');
+        return;
+    }
+
+    $form.trigger('submit');  // this will hit your existing .data-ajax-submit handler
+});

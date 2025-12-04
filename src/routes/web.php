@@ -37,7 +37,10 @@ Route::middleware(['auth', 'locked'])->group(function () {
     Route::put('users/{user}/permissions', [UserPermissionController::class, 'update'])->name('users.permissions.update');
     
     // Master--Catgories
-    Route::put('categories', [CategoryController::class, 'update'])->name('category.index');
+    Route::get('category', [CategoryController::class, 'index'])->name('category.index');
+    Route::get('category/list', [CategoryController::class, 'list'])->name('category.list');
+    Route::get('category/create', [CategoryController::class, 'create'])->name('category.create');
+    Route::post('category/store', [CategoryController::class, 'store'])->name('category.store');
 
 });
 
