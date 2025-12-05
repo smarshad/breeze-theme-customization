@@ -1,7 +1,5 @@
 <?php 
 
-// app/Repositories/CategoryRepository.php
-
 namespace App\Repositories;
 
 use App\Interfaces\CategoryRepositoryInterface;

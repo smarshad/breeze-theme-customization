@@ -79,6 +79,19 @@
 </div>
 @endsection
 @push('scripts')
+<script>
+    window.routes = {
+        category_edit: "{{ route('category.edit', ':id') }}",
+        delete: "{{ route('category.destroy', ':id') }}",
+    };
+
+    window.lang = {
+        new: @json(__('global.new')),
+        edit: @json(__('global.update')),
+        close: @json(__('global.close')),
+        category_title: @json(__('category.title')),
+    };
+</script>
 <script src="{{ asset('backend/js/manage-category.js') }}"></script>
 <script src="{{ asset('backend/js/ajax-form-submit.js') }}"></script>
 @endpush

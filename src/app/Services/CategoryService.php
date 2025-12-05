@@ -32,7 +32,7 @@ class CategoryService
     public function createCategory(CategoryDTO $categoryDTO): Category
     {
         // Business logic: e.g., check for profanity, trigger external API call
-        
+
         return DB::transaction(function () use ($categoryDTO) {
             // 1. Core persistence
             $category = $this->categoryRepository->create($categoryDTO->toArray());
@@ -64,6 +64,16 @@ class CategoryService
     public function deleteCategory(int $categoryId): bool
     {
         // Business logic: e.g., check if category is in use before deleting
+
+        // 1. Check if category is used in the expenses table
+        // $expenseExists = Expense::where('category_id', $categoryId)->exists();
+
+        // if ($expenseExists) {
+        //     // Category cannot be deleted
+        //     return false;
+        // }
+
+        // 2. Otherwise delete normally using repository
         return $this->categoryRepository->delete($categoryId);
     }
 }

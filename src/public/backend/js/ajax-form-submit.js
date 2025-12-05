@@ -195,7 +195,6 @@ $(document).on('click', '.openModel', function (e) {
 
     // Open modal
     $modal.modal('show');
-
     // Load content
     $.get(url)
         .done(function (html) {
