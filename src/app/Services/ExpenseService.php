@@ -9,10 +9,15 @@ class ExpenseService
 {
 
     protected const CACHE_KEY_ALL = 'expense.all';
-    
+
      /**
      * Create New Record
      */
+
+     public function __construct()
+     {
+        throw new \Exception('Not implemented');
+     }
 
      public function create(ExpenseDTO $paymentMethodDO): PaymentMethod
      {
