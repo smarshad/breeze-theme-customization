@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\ExpenseType;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\BaseFormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateExpenseTypeRequest extends FormRequest
+class UpdateExpenseTypeRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -31,7 +31,7 @@ class UpdateExpenseTypeRequest extends FormRequest
         $expenseTypeId = $expenseType ? $expenseType->id : $this->route('id');
 
         return [
-            'name'        => ['required', 'string', 'max:255', Rule::unique('categories')->ignore($expenseTypeId)],
+            'name'        => ['required', 'string', 'max:255', Rule::unique('expanse_types')->ignore($expenseTypeId)],
             'description' => ['nullable', 'string'],
         ];
     }

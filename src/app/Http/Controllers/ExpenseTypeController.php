@@ -48,7 +48,7 @@ class ExpenseTypeController extends BaseController // Extend the new BaseControl
 
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created rrecord.
      */
     public function store(StoreExpenseTypeRequest $request)
     {

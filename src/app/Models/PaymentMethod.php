@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ExpenseType extends Model
+class PaymentMethod extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
         'name',
-        'description',
-        'created_by',
+        'code',
+        'created_by'
     ];
 
     public function creator():BelongsTo

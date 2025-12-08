@@ -65,7 +65,7 @@
                     <ul class="nav-second-level" aria-expanded="false">
                         <li><a href="{{route('category.index')}}">Category</a></li>
                         <li><a href="{{route('expensetype.index')}}">Expense Type</a></li>
-                        <li><a href="{{route('roles.create')}}">Payment Method</a></li>
+                        <li><a href="{{route('paymentmethod.index')}}">Payment Method</a></li>
                     </ul>
                 </li>
 

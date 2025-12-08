@@ -21,10 +21,10 @@ class ExpenseTypeRepository implements ExpenseTypeRepositoryInterface
         return $this->model->paginate($perPage, $columns);
     }
 
-    public function findById(int $categoryId): ExpenseType
+    public function findById(int $id): ExpenseType
     {
         // Use findOrFail to automatically throw ModelNotFoundException if not found
-        return $this->model->findOrFail($categoryId);
+        return $this->model->findOrFail($id);
     }
 
     public function create(array $details): ExpenseType
@@ -32,17 +32,17 @@ class ExpenseTypeRepository implements ExpenseTypeRepositoryInterface
         return $this->model->create($details);
     }
 
-    public function update(int $categoryId, array $newDetails): ExpenseType
+    public function update(int $id, array $newDetails): ExpenseType
     {
-        $expenseType = $this->findById($categoryId);
+        $expenseType = $this->findById($id);
         $expenseType->update($newDetails);
         return $expenseType;
     }
 
-    public function delete(int $categoryId): bool
+    public function delete(int $id): bool
     {
         // Eloquent delete returns a boolean indicating success
-        return $this->model->destroy($categoryId);
+        return $this->model->destroy($id);
     }
 
     public function hasRelatedExpenses(int $expenseTypeId): bool

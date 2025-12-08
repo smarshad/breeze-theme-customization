@@ -9,6 +9,7 @@ use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 use App\Http\Controllers\Account\PasswordController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseTypeController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -23,38 +24,96 @@ Route::middleware(['auth', 'locked', 'verified'])->prefix('auth')->group(functio
     Route::get('/dashboard1',[DashboardController::class, 'dashboard1'])->name('dashboard1');
     Route::get('/dashboard2',[DashboardController::class, 'dashboard2'])->name('dashboard2');
 });
-
 Route::middleware(['auth', 'locked'])->group(function () {
-    Route::get('/profile', [ProfileController::class, 'showProfile'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::put('/profile/two-factor-auth', [ProfileController::class, 'twoFactorAuth'])->name('profile.two.factor.auth');
-    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
-    Route::resource('permissions', PermissionController::class);
-    Route::resource('roles', RoleController::class);
-    Route::resource('users', UserController::class);
-    Route::get('users/{user}/permissions', [UserPermissionController::class, 'edit'])->name('users.permissions');
-    Route::put('users/{user}/permissions', [UserPermissionController::class, 'update'])->name('users.permissions.update');
-    
-    // Master--Catgories
-    Route::get('category', [CategoryController::class, 'index'])->name('category.index');
-    Route::get('category/list', [CategoryController::class, 'list'])->name('category.list');
-    Route::get('category/create', [CategoryController::class, 'create'])->name('category.create');
-    Route::post('category/store', [CategoryController::class, 'store'])->name('category.store');
-    Route::get('category/{id}/edit', [CategoryController::class, 'edit'])->name('category.edit');
-    Route::put('category/update/{id}', [CategoryController::class, 'update'])->name('category.update');
-    Route::delete('/category/{id}', [CategoryController::class, 'destroy'])->name('category.destroy');
+    /**
+     * Profile
+     */
+    Route::prefix('profile')
+        ->name('profile.')
+        ->controller(ProfileController::class)
+        ->group(function () {
+            Route::get('/', 'showProfile')->name('edit');              // profile.edit
+            Route::patch('/', 'update')->name('update');               // profile.update
+            Route::delete('/', 'destroy')->name('destroy');            // profile.destroy
+            Route::put('/two-factor-auth', 'twoFactorAuth')
+                ->name('two.factor.auth');                             // profile.two.factor.auth
+        });
 
+    /**
+     * Password
+     */
+    Route::put('password', [PasswordController::class, 'update'])
+        ->name('password.update');
 
-    // Master--ExpenseType
-    Route::get('expense-type', [ExpenseTypeController::class, 'index'])->name('expensetype.index');
-    Route::get('expense-type/getAll', [ExpenseTypeController::class, 'getAll'])->name('expensetype.list');
-    Route::get('expense-type/create', [ExpenseTypeController::class, 'create'])->name('expensetype.create');
-    Route::post('expense-type/store', [ExpenseTypeController::class, 'store'])->name('expensetype.store');
-    Route::get('expense-type/{id}/edit', [ExpenseTypeController::class, 'edit'])->name('expensetype.edit');
-    Route::put('expense-type/update/{id}', [ExpenseTypeController::class, 'update'])->name('expensetype.update');
-    Route::delete('/expense-type/{id}', [ExpenseTypeController::class, 'destroy'])->name('expensetype.destroy');
+    /**
+     * Core RBAC Resources
+     */
+    Route::resources([
+        'permissions' => PermissionController::class,
+        'roles'       => RoleController::class,
+        'users'       => UserController::class,
+    ]);
+
+    /**
+     * User Permissions
+     */
+    Route::prefix('users/{user}')
+        ->name('users.')
+        ->group(function () {
+            Route::get('permissions', [UserPermissionController::class, 'edit'])
+                ->name('permissions');            // users.permissions
+            Route::put('permissions', [UserPermissionController::class, 'update'])
+                ->name('permissions.update');     // users.permissions.update
+        });
+
+    /**
+     * Master – Categories
+     */
+    Route::prefix('category')
+        ->name('category.')
+        ->controller(CategoryController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');                   // category.index
+            Route::get('/list', 'list')->name('list');                 // category.list
+            Route::get('/create', 'create')->name('create');           // category.create
+            Route::post('/store', 'store')->name('store');             // category.store
+            Route::get('/{id}/edit', 'edit')->name('edit');            // category.edit
+            Route::put('/{id}', 'update')->name('update');             // category.update
+            Route::delete('/{id}', 'destroy')->name('destroy');        // category.destroy
+        });
+
+    /**
+     * Master – Expense Types
+     */
+    Route::prefix('expense-type')
+        ->name('expensetype.')
+        ->controller(ExpenseTypeController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');                   // expensetype.index
+            Route::get('/getAll', 'getAll')->name('list');             // expensetype.list
+            Route::get('/create', 'create')->name('create');           // expensetype.create
+            Route::post('/store', 'store')->name('store');             // expensetype.store
+            Route::get('/{id}/edit', 'edit')->name('edit');            // expensetype.edit
+            Route::put('/{id}', 'update')->name('update');             // expensetype.update
+            Route::delete('/{id}', 'destroy')->name('destroy');        // expensetype.destroy
+        });
+
+    /**
+     * Master – Payment Method
+     */
+    Route::prefix('payment-method')
+        ->name('paymentmethod.')
+        ->controller(PaymentMethodController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');                   // paymentmethod.index
+            Route::get('/getAll', 'getAll')->name('list');             // paymentmethod.list
+            Route::get('/create', 'create')->name('create');           // paymentmethod.create
+            Route::post('/store', 'store')->name('store');             // paymentmethod.store
+            Route::get('/{id}/edit', 'edit')->name('edit');            // paymentmethod.edit
+            Route::put('/{id}', 'update')->name('update');             // paymentmethod.update
+            Route::delete('/{id}', 'destroy')->name('destroy');        // paymentmethod.destroy
+        });
 });
 
 Route::middleware(['auth'])->group(function () {
