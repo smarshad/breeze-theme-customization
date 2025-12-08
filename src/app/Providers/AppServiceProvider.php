@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Interfaces\CategoryRepositoryInterface;
+use App\Interfaces\ExpenseTypeRepositoryInterface;
 use App\Repositories\CategoryRepository;
+use App\Repositories\ExpenseTypeRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,6 +18,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             CategoryRepositoryInterface::class,
             CategoryRepository::class
+        );
+    
+        $this->app->bind(
+            ExpenseTypeRepositoryInterface::class,
+            ExpenseTypeRepository::class
         );
     }
 

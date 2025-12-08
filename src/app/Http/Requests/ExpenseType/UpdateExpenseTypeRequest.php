@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Category;
+namespace App\Http\Requests\ExpenseType;
 
-use App\Http\Requests\BaseFormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class Update extends BaseFormRequest
+class UpdateExpenseTypeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,24 +24,24 @@ class Update extends BaseFormRequest
     {
         // First, try to get the category object from the route.
         // This works for routes like /categories/{category}
-        $category = $this->route('category');
+        $expenseType = $this->route('expenseType');
 
         // If that fails, try to get the ID directly from the route parameters.
         // This works for routes like /categories/{id}
-        $categoryId = $category ? $category->id : $this->route('id');
+        $expenseTypeId = $expenseType ? $expenseType->id : $this->route('id');
+
         return [
-            'name'        => ['required', 'string', 'max:255', Rule::unique('categories')->ignore($categoryId)],
+            'name'        => ['required', 'string', 'max:255', Rule::unique('categories')->ignore($expenseTypeId)],
             'description' => ['nullable', 'string'],
-            'color_code'  => ['nullable', 'string'],
-            'is_active'   => ['nullable', 'boolean'], // new field
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required' => 'Category name is required.',
-            'name.max'      => 'Category name must not exceed 255 characters.',
+            'name.required'     => 'Expense type is required.',
+            'name.max'          => 'Expense type must not exceed 255 characters.',
+            'name.unique'       => 'Expense type is already exists.',
             'is_active.boolean' => 'The active status must be true or false.',
         ];
     }

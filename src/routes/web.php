@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 use App\Http\Controllers\Account\PasswordController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ExpenseTypeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -44,6 +45,16 @@ Route::middleware(['auth', 'locked'])->group(function () {
     Route::get('category/{id}/edit', [CategoryController::class, 'edit'])->name('category.edit');
     Route::put('category/update/{id}', [CategoryController::class, 'update'])->name('category.update');
     Route::delete('/category/{id}', [CategoryController::class, 'destroy'])->name('category.destroy');
+
+
+    // Master--ExpenseType
+    Route::get('expense-type', [ExpenseTypeController::class, 'index'])->name('expensetype.index');
+    Route::get('expense-type/getAll', [ExpenseTypeController::class, 'getAll'])->name('expensetype.list');
+    Route::get('expense-type/create', [ExpenseTypeController::class, 'create'])->name('expensetype.create');
+    Route::post('expense-type/store', [ExpenseTypeController::class, 'store'])->name('expensetype.store');
+    Route::get('expense-type/{id}/edit', [ExpenseTypeController::class, 'edit'])->name('expensetype.edit');
+    Route::put('expense-type/update/{id}', [ExpenseTypeController::class, 'update'])->name('expensetype.update');
+    Route::delete('/expense-type/{id}', [ExpenseTypeController::class, 'destroy'])->name('expensetype.destroy');
 });
 
 Route::middleware(['auth'])->group(function () {

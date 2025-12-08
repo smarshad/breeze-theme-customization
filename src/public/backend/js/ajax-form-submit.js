@@ -116,7 +116,7 @@ function handleAjaxFormSubmit(action, method, formData) {
             if (response.redirect != undefined) {
                 window.location.href = response.redirect;
             }
-            
+
             if (response.callback != undefined) {
                 // initList(response.callback);
 
@@ -124,23 +124,39 @@ function handleAjaxFormSubmit(action, method, formData) {
                 // table.ajax.url(response.callback).load();
                 // If you just want to reload current data:
                 if ($.fn.DataTable.isDataTable('#datatable')) {
-                    $('#datatable').DataTable().ajax.reload(null, false); 
+                    $('#datatable').DataTable().ajax.reload(null, false);
                 }
-                
+
                 $('#ajaxModal').modal('hide');
             }
         },
         error(xhr) {
-            const data = xhr.responseJSON;
-            if (xhr.status === 422) {
-                // Laravel validation error
+            const data = xhr.responseJSON || {};
+
+            // 1. Laravel validation errors (422)
+            if (xhr.status === 422 && data.errors) {
                 showValidationErrors(data.errors);
-            } else if (data.success != undefined && data.success == false && (data.message != undefined || data.error != undefined)) {
-                alert(`${data.message}\n${data.error}`);
-            } else {
-                alert('An error occurred.');
+                return;
             }
+
+            // 2. Backend error with `success = false`
+            if (data.success === false) {
+                const msg = data.message ?? 'An error occurred.';
+                const err = data.error ?? '';
+                alert(`${msg}${err ? `\n${err}` : ''}`);
+                return;
+            }
+
+            // 3. QueryException or unexpected errors with only message field
+            if (data.message) {
+                alert(data.message);
+                return;
+            }
+
+            // 4. Last fallback for unknown error structures
+            alert('An unexpected error occurred. Please try again.');
         }
+
     });
 }
 
@@ -213,7 +229,7 @@ $(document).on('click', '.js-submit-btn', function (e) {
 
     // find form inside the modal and trigger submit
     let $modal = $('#ajaxModal'); // or your modal id
-    let $form  = $modal.find('form.data-ajax-submit').first();
+    let $form = $modal.find('form.data-ajax-submit').first();
 
     if ($form.length === 0) {
         alert('Form not found in modal');
