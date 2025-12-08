@@ -12,12 +12,12 @@ use App\Http\Requests\PaymentMethod\UpdateRequest;
 use App\Models\PaymentMethod;
 use Illuminate\Validation\ValidationException;
 use DomainException;
-use Dotenv\Parser\Value;
 use Exception;
 
 class PaymentMethodController extends BaseController
 {
     public function __construct(protected PaymentMethodService $service) {}
+
     /**
      * Display a listing of the resource.
      */

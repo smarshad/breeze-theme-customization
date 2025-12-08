@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 use App\Http\Controllers\Account\PasswordController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseTypeController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PermissionController;
@@ -105,6 +106,19 @@ Route::middleware(['auth', 'locked'])->group(function () {
     Route::prefix('payment-method')
         ->name('paymentmethod.')
         ->controller(PaymentMethodController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');                   // paymentmethod.index
+            Route::get('/getAll', 'getAll')->name('list');             // paymentmethod.list
+            Route::get('/create', 'create')->name('create');           // paymentmethod.create
+            Route::post('/store', 'store')->name('store');             // paymentmethod.store
+            Route::get('/{id}/edit', 'edit')->name('edit');            // paymentmethod.edit
+            Route::put('/{id}', 'update')->name('update');             // paymentmethod.update
+            Route::delete('/{id}', 'destroy')->name('destroy');        // paymentmethod.destroy
+        });
+
+        Route::prefix('expense')
+        ->name('expense.')
+        ->controller(ExpenseController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');                   // paymentmethod.index
             Route::get('/getAll', 'getAll')->name('list');             // paymentmethod.list

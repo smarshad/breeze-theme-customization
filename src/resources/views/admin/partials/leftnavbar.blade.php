@@ -69,6 +69,18 @@
                     </ul>
                 </li>
 
+                <li>
+                    <a href="javascript: void(0);">
+                        <i class="fe-lock"></i>
+                        <span class="menu-arrow"></span>
+                        <span> Expense </span>
+                    </a>
+                    <ul class="nav-second-level" aria-expanded="false">
+                        <li><a href="{{route('expense.index')}}">View</a></li>
+                        <li><a href="{{route('expense.create')}}">New</a></li>
+                    </ul>
+                </li>
+
                 {{--<li>
                     <a href="javascript: void(0);">
                         <i class="fe-file-plus"></i>

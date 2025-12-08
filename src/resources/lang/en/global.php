@@ -2,6 +2,7 @@
 
 return [
     'new'  => 'Create New',
+    'reset'  => 'Reset',
     'back' => 'Back',
     'save' => 'Save',
     'update' => 'Update',
