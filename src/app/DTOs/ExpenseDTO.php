@@ -8,13 +8,13 @@ class ExpenseDTO
         public int $category_id,
         public int $expense_type_id,
         public int $payment_method_id,
-        public int $expense_date,
-        public string $desciption,
+        public string $expense_date,
+        public string $description,
         public float $amount,
         public float $cashback,
-        public string $notes,
-        public string $file_path,
-        public readonly ?int $created_by,
+        public ?string $notes = NULL,
+        public ?string $file_path = NULL,
+        public readonly ?int $created_by = NULL,
 
     ) {}
 
@@ -25,11 +25,11 @@ class ExpenseDTO
             expense_type_id: $data['expense_type_id'],
             payment_method_id: $data['payment_method_id'],
             expense_date: $data['expense_date'],
-            desciption: $data['desciption'],
+            description: $data['description'],
             amount: $data['amount'],
-            cashback: $data['cashback'],
-            notes: $data['notes'],
-            file_path: $data['file_path'],
+            cashback: $data['cashback'] ?? 0.0,
+            notes: $data['notes'] ?? NULL,
+            file_path: isset($data['file_path']) ? (string) $data['file_path'] : NULL,
             created_by: $data['created_by'],
         );
     }
@@ -41,7 +41,7 @@ class ExpenseDTO
             'expense_type_id' => $this->expense_type_id,
             'payment_method_id' => $this->payment_method_id,
             'expense_date' => $this->expense_date,
-            'desciption' => $this->desciption,
+            'description' => $this->description,
             'amount' => $this->amount,
             'cashback' => $this->cashback,
             'notes' => $this->notes,

@@ -6,7 +6,6 @@ use App\Models\PaymentMethod;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use App\Interfaces\PaymentMethodRepositoryInterface;
-use Illuminate\Database\Eloquent\Model;
 
 class PaymentMethodRepository implements PaymentMethodRepositoryInterface
 {

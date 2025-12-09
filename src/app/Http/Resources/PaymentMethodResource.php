@@ -23,9 +23,9 @@ class PaymentMethodResource extends JsonResource
             // full creator info (only if relation is loaded)
             'creator'    => $this->whenLoaded('creator', function () {
                 return [
-                    'id'    => $this->creator->id,
+                    // 'id'    => $this->creator->id,
                     'name'  => $this->creator->name,
-                    'email' => $this->creator->email,
+                    // 'email' => $this->creator->email,
                 ];
             }),
         ];

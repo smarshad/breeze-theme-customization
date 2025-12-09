@@ -13,7 +13,7 @@ $(document).ready(function () {
         let form = $(this);
         let action = form.attr('action');
         let method = form.attr('method') || 'POST';
-        let formData = form.serialize();
+        let formData = new FormData(form[0]);
 
         if (action == undefined || action == '') {
             alert('Action Missing');
@@ -110,9 +110,13 @@ function handleAjaxFormSubmit(action, method, formData) {
         url: action,
         method: method,
         data: formData,
+        contentType: false,
+        processData: false,
+        cache: false,
         success(response) {
             console.log('response:', response, 'formData:', formData);
             alert(response.message)
+            alert(response.redirect)
             if (response.redirect != undefined) {
                 window.location.href = response.redirect;
             }

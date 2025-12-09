@@ -103,13 +103,13 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="file_path" class="col-3 col-form-label">File Path</label>
+                            <label for="uploaded_file" class="col-3 col-form-label">File Path</label>
                             <div class="col-3">
-                                <input type="file" class="form-control" id="file_path" name="file_path"  placeholder="file_path">
+                                <input type="file" class="form-control" id="uploaded_file" name="uploaded_file">
                             </div>
                         </div>
                         <div class="form-group mb-0 row">
-                            <div class="offset-3 col-9">
+                            <div class="col-12 text-center">
                                 <button type="submit" class="btn btn-info waves-effect waves-light">{{ __('global.save') }}</button>
                                 <button type="reset" class="btn btn-danger waves-effect waves-light">{{ __('global.reset') }}</button>
                             </div>

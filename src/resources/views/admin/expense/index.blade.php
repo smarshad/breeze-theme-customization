@@ -28,11 +28,11 @@
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="javascript: void(0);">Adminox</a></li>
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{__('expensetype.title')}}</a></li>
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{__('expense.title')}}</a></li>
                             <li class="breadcrumb-item active">All</li>
                         </ol>
                     </div>
-                    <h4 class="page-title">{{__('expensetype.title')}}</h4>
+                    <h4 class="page-title">{{__('expense.title')}}</h4>
                 </div>
             </div>
         </div>
@@ -40,9 +40,9 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card-box table-responsive">
-                    <input type="hidden" id="listRoute" value="{{route('expensetype.list')}}">
+                    <input type="hidden" id="listRoute" value="{{route('expense.list')}}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="header-title mb-3">{{ __('expensetype.all') }}</h4>
+                        <h4 class="header-title mb-3">{{ __('expense.all') }}</h4>
                         <a
                             class="btn btn-primary btn-sm"
                             href="{{ route('expense.create') }}">
@@ -56,8 +56,14 @@
                             <thead>
                                 <tr>
                                     <th>Sr No</th>
+                                    <th>Amount</th>
+                                    <th>Category</th>
                                     <th>Expense type</th>
+                                    <th>Payment Method</th>
+                                    <th>Cashback</th>
                                     <th>Description</th>
+                                    <th>Notes</th>
+                                    <th>File</th>
                                     <th>Created At</th>
                                     <th>Created By</th>
                                     <th>Action</th>
@@ -75,17 +81,17 @@
 @push('scripts')
 <script>
     window.routes = {
-        edit: "{{ route('expensetype.edit', ':id') }}",
-        delete: "{{ route('expensetype.destroy', ':id') }}",
+        edit: "{{ route('expense.edit', ':id') }}",
+        delete: "{{ route('expense.destroy', ':id') }}",
     };
 
     window.lang = {
         new: @json(__('global.new')),
         edit: @json(__('global.update')),
         close: @json(__('global.close')),
-        title: @json(__('expensetype.title')),
+        title: @json(__('expense.title')),
     };
 </script>
-<script src="{{ asset('backend/js/manage-expensetype.js') }}"></script>
+<script src="{{ asset('backend/js/manage-expense.js') }}"></script>
 <script src="{{ asset('backend/js/ajax-form-submit.js') }}"></script>
 @endpush

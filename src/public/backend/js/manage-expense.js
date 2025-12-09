@@ -53,10 +53,20 @@ $(function () {
 
             columns: [
                 { data: "id" },
-                { data: "name" },
-                { data: "code" },
+                { data: 'amount', render: function (data) { return '$' + parseFloat(data).toFixed(2); } },
+                { data: "category.name" },
+                { data: "expenseType.name" },
+                { data: "paymentMethod.name" },
+                { data: "cashback", render: function (data) { return '$' + parseFloat(data).toFixed(2); } },
+                { data: "description" },
+                { data: "notes" },
+                {
+                    data: "file_path",
+                    render: data => filePath(data)
+
+                },
                 { data: "created_at" },
-                { data: "creator.name", defaultContent: "-" },
+                { data: "creator.name" },
                 {
                     data: "id",
                     render: id => renderActionButtons(id)
@@ -75,6 +85,7 @@ $(function () {
             }
         });
     }
+
     function renderActionButtons(id) {
         const editUrl = window.routes.edit.replace(':id', id);
         const deleteUrl = window.routes.delete.replace(':id', id);
@@ -88,7 +99,7 @@ $(function () {
             </button>
         `.trim();
 
-        const titleText = `${window.lang.edit} ${window.lang.title}`;
+        const titleText = `${window.lang.edit} ${window.lang.category_title}`;
 
         return `
             <button
@@ -109,6 +120,12 @@ $(function () {
                 Delete
             </button>
         `;
+    }
+
+    function filePath(data) {
+        const fullUrl = `${window.location.origin}/storage/${data}`;
+        if (!data) return "-"; // no file
+            return `<a href="${fullUrl}" target="_blank" class="btn btn-secondary">View File</a>`;
     }
 
     function showTableLoader() {
