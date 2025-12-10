@@ -116,7 +116,6 @@ function handleAjaxFormSubmit(action, method, formData) {
         success(response) {
             console.log('response:', response, 'formData:', formData);
             alert(response.message)
-            alert(response.redirect)
             if (response.redirect != undefined) {
                 window.location.href = response.redirect;
             }

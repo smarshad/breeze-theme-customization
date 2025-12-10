@@ -124,9 +124,6 @@ class PaymentMethodController extends BaseController
             }else{
                 return $this->errorResponse('Some Record exist with this payment type',409);
             }
-
-
-
         }catch (Exception $e) {
             return $this->handleUnexpectedException($e);
         }

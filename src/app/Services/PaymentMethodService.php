@@ -66,7 +66,8 @@ class PaymentMethodService
      * @throws CannotDeleteExpenseTypeException
      */
 
-     public function delete(int $id):bool{
+    public function delete(int $id): bool
+    {
         $this->validatePaymentMethodCanBeDeleted($id);
 
         // Perform deletion
@@ -74,17 +75,17 @@ class PaymentMethodService
 
         $delete = $this->paymentMethodRepository->delete($id);
 
-        if(!$delete){
+        if (!$delete) {
             throw new DomainException('The repository failed to delete the payment method.');
         }
 
         // Invalidate the cache for 'all' list
         Cache::forget(self::CACHE_KEY_ALL);
-        
-        return true;
-     }
 
-      /**
+        return true;
+    }
+
+    /**
      * Business rule: Check if the payment method can be deleted.
      * @throws DomainException
      */

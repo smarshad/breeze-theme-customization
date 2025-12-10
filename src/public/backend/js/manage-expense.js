@@ -53,11 +53,11 @@ $(function () {
 
             columns: [
                 { data: "id" },
-                { data: 'amount', render: function (data) { return '$' + parseFloat(data).toFixed(2); } },
+                { data: 'amount', render: function (data) { return 'Rs. ' + parseFloat(data).toFixed(2); } },
                 { data: "category.name" },
                 { data: "expenseType.name" },
                 { data: "paymentMethod.name" },
-                { data: "cashback", render: function (data) { return '$' + parseFloat(data).toFixed(2); } },
+                { data: "cashback", render: function (data) { return 'Rs. ' + parseFloat(data).toFixed(2); } },
                 { data: "description" },
                 { data: "notes" },
                 {
@@ -89,33 +89,14 @@ $(function () {
     function renderActionButtons(id) {
         const editUrl = window.routes.edit.replace(':id', id);
         const deleteUrl = window.routes.delete.replace(':id', id);
-
-        const footerHtml = `
-            <button type="submit" class="btn btn-primary waves-effect waves-light js-submit-btn">
-                ${window.lang.edit}
-            </button>
-            <button type="button" class="btn btn-info waves-effect waves-light" data-dismiss="modal">
-                ${window.lang.close}
-            </button>
-        `.trim();
-
         const titleText = `${window.lang.edit} ${window.lang.category_title}`;
 
         return `
-            <button
-                class="btn btn-sm btn-primary openModel"
-                data-footer='<button type="submit" class="btn btn-primary waves-effect waves-light js-submit-btn">
+            <a
+                class="btn btn-sm btn-primary"
+                href='${editUrl}'>
                 ${window.lang.edit}
-            </button>
-            <button type="button" class="btn btn-info waves-effect waves-light" data-dismiss="modal">
-                ${window.lang.close}
-            </button>'
-                data-url="${editUrl}"
-                data-id="${id}"
-                data-size="lg"
-                data-title="${titleText}">
-                Edit
-            </button>
+            </a>'
             <button class="btn btn-sm btn-danger btn-delete" data-action="${deleteUrl}" data-id="${id}">
                 Delete
             </button>
