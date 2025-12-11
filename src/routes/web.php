@@ -10,6 +10,7 @@ use App\Http\Controllers\Account\PasswordController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseTypeController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
@@ -22,9 +23,11 @@ Route::get('/', function () {
 
 Route::get('/logs', [LogViewerController::class, 'index'])->name('logs');
 Route::middleware(['auth', 'locked', 'verified'])->prefix('auth')->group(function () {
-    Route::get('/dashboard1',[DashboardController::class, 'dashboard1'])->name('dashboard1');
-    Route::get('/dashboard2',[DashboardController::class, 'dashboard2'])->name('dashboard2');
+    Route::get('/dashboard1', [DashboardController::class, 'dashboard1'])->name('dashboard1');
+    Route::get('/dashboard2', [DashboardController::class, 'dashboard2'])->name('dashboard2');
+    Route::get('/dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
 });
+
 Route::middleware(['auth', 'locked'])->group(function () {
 
     /**
@@ -116,7 +119,26 @@ Route::middleware(['auth', 'locked'])->group(function () {
             Route::delete('/{id}', 'destroy')->name('destroy');        // paymentmethod.destroy
         });
 
-        Route::prefix('expense')
+    /**
+     * Master – Payment Method
+     */
+    Route::prefix('menu')
+        ->name('menu.')
+        ->controller(MenuController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');                   // paymentmethod.index
+            Route::get('/getAll', 'getAll')->name('list');             // paymentmethod.list
+            Route::get('/create', 'create')->name('create');           // paymentmethod.create
+            Route::post('/store', 'store')->name('store');             // paymentmethod.store
+            Route::get('/{id}/edit', 'edit')->name('edit');            // paymentmethod.edit
+            Route::put('/{id}', 'update')->name('update');             // paymentmethod.update
+            Route::delete('/{id}', 'destroy')->name('destroy');        // paymentmethod.destroy
+        });
+
+    /**
+     * Expense
+     */
+    Route::prefix('expense')
         ->name('expense.')
         ->controller(ExpenseController::class)
         ->group(function () {

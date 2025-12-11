@@ -5,6 +5,7 @@
 @endpush
 <!-- Begin page -->
  @section('content')
+ <input type="hidden" id="listRoute" value="{{route('dashboard.summary')}}">
     <div class="content">
         
         <!-- Start Content-->
@@ -381,4 +382,5 @@
 <script src="{{asset('backend/libs/echarts/echarts.min.js')}}"></script>
 
 <script src="{{asset('backend/js/pages/dashboard.init.js')}}"></script>
+<script src="{{asset('backend/js/dashboard.js')}}"></script>
 @endpush

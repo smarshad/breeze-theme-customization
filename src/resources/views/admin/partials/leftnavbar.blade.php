@@ -66,6 +66,7 @@
                         <li><a href="{{route('category.index')}}">Category</a></li>
                         <li><a href="{{route('expensetype.index')}}">Expense Type</a></li>
                         <li><a href="{{route('paymentmethod.index')}}">Payment Method</a></li>
+                        <li><a href="{{route('menu.index')}}">Menu</a></li>
                     </ul>
                 </li>
 
