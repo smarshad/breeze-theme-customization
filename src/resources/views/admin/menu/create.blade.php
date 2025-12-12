@@ -47,167 +47,87 @@ $buttonText = $isEdit ? __('global.update') : __('global.save');
                         </a>
                     </div>
                     <x-alert />
-
-                    <form action="#" method="POST" class="bg-white rounded-lg shadow p-6">
+                    <form id="editRoleForm" action="{{route('menu.store')}}" method="POST" class="data-ajax-submit form-horizontal">
                         @csrf
-
-                        <div class="mb-4">
-                            <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Name *</label>
-                            <input type="text" name="name" id="name" value="{{ old('name') }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label for="route" class="block text-gray-700 text-sm font-bold mb-2">Route</label>
-                                <input type="text" name="route" id="route" value="{{ old('route') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="row mb-3">
+                            <label for="name" class="col-3 col-form-label">Menu Name <span class="text-danger">*</span></label>
+                            <div class="col-3">
+                                <input type="text" class="form-control" id="name" name="name" placeholder="«Name»">
                             </div>
+                            <label for="parent_id" class="col-3 col-form-label">Parent Menu</label>
+                            <div class="col-3">
 
-                            <div>
-                                <label for="url" class="block text-gray-700 text-sm font-bold mb-2">URL</label>
-                                <input type="url" name="url" id="url" value="{{ old('url') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                        </div>
+                                <select name="menu_item_id" id="menu_item_select" class="form-control">
+                                    {{-- Optional: Add a default, unselectable option --}}
+                                    <option value="">-- Select a Menu Item --</option>
 
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label for="icon" class="block text-gray-700 text-sm font-bold mb-2">Icon</label>
-                                <input type="text" name="icon" id="icon" value="{{ old('icon') }}" placeholder="e.g., fa fa-home" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @error('icon')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-                            </div>
+                                    {{-- Loop through the flat array provided by the Repository/Service --}}
+                                    @foreach ($parentMenus as $item)
+                                    {{--
+                                        The key to the hierarchy is using $item['display_title'], 
+                                        which already contains the '-->' prefix for indentation.
+                                        The value is the item's ID.
+                                    --}}
 
-                            <div>
-                                <label for="order" class="block text-gray-700 text-sm font-bold mb-2">Order</label>
-                                <input type="number" name="order" id="order" value="{{ old('order', 0) }}" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @error('order')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label for="parent_id" class="block text-gray-700 text-sm font-bold mb-2">Parent Menu</label>
-                                <select name="parent_id" id="parent_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">-- None --</option>
-                                    @foreach ($parentMenus as $parent)
-                                    <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
-                                        {{ $parent->name }}
+                                    <option value="{{ $item['id'] }}">
+                                        {{ $item['display_title'] }}
                                     </option>
                                     @endforeach
                                 </select>
-                                @error('parent_id')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
+                                
                             </div>
+                        </div>
 
-                            <div>
-                                <label for="permission_id" class="block text-gray-700 text-sm font-bold mb-2">Permission</label>
-                                <select name="permission_id" id="permission_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">-- None --</option>
+                        <div class="row mb-3">
+                            <label for="route" class="col-3 col-form-label">Laravel Route Name </label>
+                            <div class="col-3">
+                                <input type="text" class="form-control" id="route" name="route" placeholder="route">
+                                <div class="form-text">e.g., <code>menu.index</code></div>
+                            </div>
+                            <label for="url" class="col-3 col-form-label">External URL (Fallback)</label>
+                            <div class="col-3">
+                                <input type="text" class="form-control" id="url" name="url" placeholder="Url">
+                                <div class="form-text">e.g., <code>https://example.com</code></div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="icon" class="col-3 col-form-label">Icon (Font Awesome Class)</label>
+                            <div class="col-3">
+                                <input type="text" class="form-control" id="icon" name="icon" placeholder="icon">
+                                <div class="form-text">e.g., <code>fa-solid fa-house</code></div>
+                            </div>
+                            <label for="permission_id" class="col-3 col-form-label">Required Permission</label>
+                            <div class="col-3">
+                                <select class="form-control" id="permission_id" name="permission_id">
+                                    <option value="">-- No Permission Required --</option>
                                     @foreach ($permissions as $permission)
-                                    <option value="{{ $permission->id }}" {{ old('permission_id') == $permission->id ? 'selected' : '' }}>
-                                        {{ $permission->name }} ({{ $permission->module }})
-                                    </option>
-                                    @endforeach
-                                </select>
-                                @error('permission_id')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="mb-6">
-                            <label for="is_active" class="flex items-center">
-                                <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="rounded">
-                                <span class="ml-2 text-gray-700">Active</span>
-                            </label>
-                            @error('is_active')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="flex gap-4">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                Create Menu
-                            </button>
-                            <a href="{{ route('menus.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                                Cancel
-                            </a>
-                        </div>
-                    </form>
-
-                    <form id="editRoleForm" action="{{ $formAction }}" method="POST" class="data-ajax-submit form-horizontal" @if($isEdit) enctype="multipart/form-data" @endif>
-                        @csrf
-                        @if($isEdit)
-                        @method('PUT')
-                        @endif
-
-
-                        <div class="form-group row">
-                            <label for="name" class="col-3 col-form-label">Name</label>
-                            <div class="col-3">
-                                <input type="text" class="form-control" id="name" name="name" value="{{old('name', $menu->name ?? '')}}" placeholder="Name">
-                            </div>
-                            <label for="route" class="col-3 col-form-label">Route</label>
-                            <div class="col-3">
-                                <input type="text" class="form-control" id="route" name="route" value="{{old('route', $menu->route ?? '')}}" placeholder="Route">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="url" class="col-3 col-form-label">Url (Optional)</label>
-                            <div class="col-3">
-                                <input type="text" class="form-control" id="url" name="url" value="{{old('url', $menu->url ?? '')}}" placeholder="URL">
-                            </div>
-                            <label for="icon" class="col-3 col-form-label">Icon (Optional)</label>
-                            <div class="col-3">
-                                <input type="text" class="form-control" id="icon" name="icon" value="{{old('icon', $menu->notes ?? '')}}" placeholder="Icon">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="parent_id" class="col-3 col-form-label">Parent Menu (Optional)</label>
-                            <div class="col-3">
-                                <select class="form-control" id="parent_id" name="parent_id">
-                                    <option value="">-- No Parent --</option>
-                                    @foreach ($menus as $parentMenu)
-                                    @if (isset($menu) && $parentMenu->id == $menu->id)
-                                    @continue {{-- Prevent selecting self as parent --}}
-                                    @endif
-                                    <option value="{{ $parentMenu->id }}" @selected(old('parent_id', $menu->parent_id ?? '') == $parentMenu->id)>
-                                        {{ $parentMenu->name }}
+                                    <option value="{{ $permission->id }}" {{ old('permission_id', $menu->permission_id ?? '') == $permission->id ? 'selected' : '' }}>
+                                        {{ $permission->name }} ({{ $permission->module ?? 'N/A' }})
                                     </option>
                                     @endforeach
                                 </select>
                             </div>
-                            <label for="order" class="col-3 col-form-label">Order (Optional)</label>
-                            <div class="col-3">
-                                <input type="number" class="form-control" id="order" name="order" value="" placeholder="Order">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="parent_id" class="col-3 col-form-label">Permisison</label>
-                            <div class="col-3">
-                                <select class="form-control" id="parent_id" name="parent_id">
-                                    <option value="">-- No Parent --</option>
-                                    @foreach ($menus as $parentMenu)
-                                    @if (isset($menu) && $parentMenu->id == $menu->id)
-                                    @continue {{-- Prevent selecting self as parent --}}
-                                    @endif
-                                    <option value="{{ $parentMenu->id }}" @selected(old('parent_id', $menu->parent_id ?? '') == $parentMenu->id)>
-                                        {{ $parentMenu->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
                         </div>
 
+                        <div class="row mb-3">
+                            <label for="order" class="col-3 col-form-label">Order</label>
+                            <div class="col-3">
+                                <input type="number" class="form-control" id="order" name="order" placeholder="order">
+                            </div>
+                            <label class="col-md-3 col-form-label" for="is_active">Is Active</label>
+                            <div class="col-md-3 pt-10">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="is_active" name="is_active" value="1">
+                                    <label class="custom-control-label" for="is_active">&nbsp;</label>
+                                </div>
+                            </div>
+                        </div>
 
-                        <div class="form-group mb-0 row">
+                        <div class="row mb-0">
                             <div class="col-12 text-center">
-                                <button type="submit" class="btn btn-info waves-effect waves-light">{{ $buttonText }}</button>
-                                <button type="reset" class="btn btn-danger waves-effect waves-light">{{ __('global.reset') }}</button>
+                                <button type="submit" class="btn btn-primary waves-effect waves-light">Create Menu</button>
+                                <button type="reset" class="btn btn-danger waves-effect waves-light">Reset</button>
                             </div>
                         </div>
                     </form>
@@ -216,8 +136,9 @@ $buttonText = $isEdit ? __('global.update') : __('global.save');
         </div>
     </div>
 </div>
+</div>
 @endsection
 @push('scripts')
 <script src="{{ asset('backend/js/ajax-form-submit.js') }}"></script>
-<script src="{{ asset('backend/js/menu.js') }}"></script>
+<!-- <script src="{{ asset('backend/js/menu.js') }}"></script> -->
 @endpush

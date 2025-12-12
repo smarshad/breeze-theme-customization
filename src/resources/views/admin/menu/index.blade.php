@@ -28,11 +28,11 @@
                     <div class="page-title-right">
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="javascript: void(0);">Adminox</a></li>
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{__('expense.title')}}</a></li>
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{__('menu.title')}}</a></li>
                             <li class="breadcrumb-item active">All</li>
                         </ol>
                     </div>
-                    <h4 class="page-title">{{__('expense.title')}}</h4>
+                    <h4 class="page-title">{{__('menu.title')}}</h4>
                 </div>
             </div>
         </div>
@@ -40,12 +40,12 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card-box table-responsive">
-                    <input type="hidden" id="listRoute" value="{{route('expense.list')}}">
+                    <input type="hidden" id="listRoute" value="{{route('menu.list')}}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="header-title mb-3">{{ __('expense.all') }}</h4>
+                        <h4 class="header-title mb-3">{{ __('menu.all') }}</h4>
                         <a
                             class="btn btn-primary btn-sm"
-                            href="{{ route('expense.create') }}">
+                            href="{{ route('menu.create') }}">
                             + {{__('global.new')}}
                         </a>
                     </div>
@@ -56,14 +56,14 @@
                             <thead>
                                 <tr>
                                     <th>Sr No</th>
-                                    <th>Amount</th>
-                                    <th>Category</th>
-                                    <th>Expense type</th>
-                                    <th>Payment Method</th>
-                                    <th>Cashback</th>
-                                    <th>Description</th>
-                                    <th>Notes</th>
-                                    <th>File</th>
+                                    <th>Name</th>
+                                    <th>Route</th>
+                                    <th>URL</th>
+                                    <th>Icon</th>
+                                    <th>Parent</th>
+                                    <th>Children Count</th>
+                                    <th>Order</th>
+                                    <th>Active</th>
                                     <th>Created At</th>
                                     <th>Created By</th>
                                     <th>Action</th>
@@ -81,17 +81,17 @@
 @push('scripts')
 <script>
     window.routes = {
-        edit: "{{ route('expense.edit', ':id') }}",
-        delete: "{{ route('expense.destroy', ':id') }}",
+        edit: "{{ route('menu.edit', ':id') }}",
+        delete: "{{ route('menu.destroy', ':id') }}",
     };
 
     window.lang = {
         new: @json(__('global.new')),
         edit: @json(__('global.update')),
         close: @json(__('global.close')),
-        title: @json(__('expense.title')),
+        title: @json(__('menu.title')),
     };
 </script>
-<script src="{{ asset('backend/js/manage-expense.js') }}"></script>
+<script src="{{ asset('backend/js/manage-menu.js') }}"></script>
 <script src="{{ asset('backend/js/ajax-form-submit.js') }}"></script>
 @endpush

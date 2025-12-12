@@ -34,7 +34,7 @@ class PermissionController extends Controller
             'permission_module' => $permission->module,
         ]);
 
-        return redirect()->route('permissions.index')
+        return redirect()->route('permissions.create')
             ->with('status', 'Permission Added Successfully');
     }
 

@@ -20,7 +20,7 @@ $(function () {
             searching: true,
             paging: true,
             ordering: true,
-            pageLength: 5,
+            pageLength:$('meta[name="perPage"]').attr('content'),
             ajax: {
                 url: url,
                 type: "GET",

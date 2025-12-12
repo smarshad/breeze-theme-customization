@@ -7,5 +7,6 @@ return [
     | Application Default Pagination Size
     |--------------------------------------------------------------------------
     */
-    'default' => env('PAGINATION_PER_PAGE', 15),
+    'default' => 10,
+
 ];

@@ -12,30 +12,29 @@ interface ExpenseRepositoryInterface
      * Retrieve all records
      */
 
-     public function getAll(): Collection;
+    public function getAll(): Collection;
 
-     /**
-      * Retrieve records with pagination
-      */
- 
-     public function getPaginated(?int $perPage = null, array $column = ['*']): LengthAwarePaginator;
- 
-     /**
-      * Create new Record
-      */
- 
-     public function create(array $data): Expense;
- 
-     /**
-      * Update an existing Record
-      */
- 
-     public function update(int $id, array $data): Expense;
- 
- 
-     /**
-      * Delete a record by its ID.
-      */
-     public function delete(int $id): bool;
+    /**
+     * Retrieve records with pagination
+     */
 
+    public function getPaginated(?int $perPage = null, array $column = ['*']): LengthAwarePaginator;
+
+    /**
+     * Create new Record
+     */
+
+    public function create(array $data): Expense;
+
+    /**
+     * Update an existing Record
+     */
+
+    public function update(int $id, array $data): Expense;
+
+
+    /**
+     * Delete a record by its ID.
+     */
+    public function delete(int $id): bool;
 }

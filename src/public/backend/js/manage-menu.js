@@ -7,7 +7,6 @@ $(function () {
 
     function initList(url) {
 
-
         if ($.fn.DataTable.isDataTable('#datatable')) {
             table.ajax.url(url).load();
             return;
@@ -53,18 +52,14 @@ $(function () {
 
             columns: [
                 { data: "id" },
-                { data: 'amount', render: function (data) { return 'Rs. ' + parseFloat(data).toFixed(2); } },
-                { data: "category.name" },
-                { data: "expenseType.name" },
-                { data: "paymentMethod.name" },
-                { data: "cashback", render: function (data) { return 'Rs. ' + parseFloat(data).toFixed(2); } },
-                { data: "description" },
-                { data: "notes" },
-                {
-                    data: "file_path",
-                    render: data => filePath(data)
-
-                },
+                { data: 'name'},
+                { data: "route" },
+                { data: "url" },
+                { data: "icon" },
+                { data: "parent_name" },
+                { data: "children.length" },
+                { data: "order" },
+                { data: "is_active" },
                 { data: "created_at" },
                 { data: "creator.name" },
                 {

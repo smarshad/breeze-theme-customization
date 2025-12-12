@@ -46,7 +46,7 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <div id="permissions-section" class="permissions-section">
+                            <div id="permissions-section" class="permissions-section col-12">
                                 <div class="mb-3 col-12">
                                     <strong>Permissions:</strong>
                                     <br />
@@ -69,7 +69,7 @@
                                         {{-- Permissions --}}
                                         <div class="row ml-3">
                                             @foreach($permissions as $permission)
-                                            <div class="col-6 col-md-3 mb-2">
+                                            <div class="col-9 col-md-2 mb-2">
                                                 <div class="form-check">
                                                     <input type="checkbox"
                                                         name="permissions[]"

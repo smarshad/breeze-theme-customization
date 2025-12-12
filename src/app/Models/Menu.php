@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,7 @@ class Menu extends Model
         'order',
         'permission_id',
         'is_active',
+        'created_by',
     ];
 
     protected $casts = [
@@ -51,4 +53,23 @@ class Menu extends Model
     {
         return $this->belongsTo(Permission::class, 'permission_id');
     }
+
+    /**
+     * Scope a query to only include active menus.
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
+    }
+
+    /**
+     * get the Child menu
+     */
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    
 }

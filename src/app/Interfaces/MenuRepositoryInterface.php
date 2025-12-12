@@ -2,49 +2,70 @@
 
 namespace App\Interfaces;
 
-use App\DTOs\MenuDTO;
 use App\Models\Menu;
-use Illuminate\Pagination\Paginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 interface MenuRepositoryInterface
 {
     /**
-     * Get all menus with pagination.
+     * Get all menus, optionally filtered by parent_id.
+     *
+     * @param int|null $parentId
+     * @return Collection
      */
-    public function paginate(int $perPage = 15): Paginator;
+    // public function getAllMenus(?int $parentId = null): Collection;
+
     /**
-     * Get all menus.
+     * Get a menu by its ID.
+     *
+     * @param int $menuId
+     * @return Menu|null
      */
-    public function getAll();
-    /**
-     * Get menu by ID.
-     */
-    public function getById(int $id): ?Menu;
+    // public function getMenuById(int $menuId): ?Menu;
+
     /**
      * Create a new menu.
+     *
+     * @param array $menuDetails
+     * @return Menu
      */
-    public function create(MenuDTO $dto): Menu;
+    public function createMenu(array $menuDetails): Menu;
+
     /**
      * Update an existing menu.
+     *
+     * @param int $menuId
+     * @param array $newDetails
+     * @return Menu|null
      */
-    public function update(int $id, MenuDTO $dto): Menu;
+    // public function updateMenu(int $menuId, array $newDetails): ?Menu;
+
     /**
-     * Delete a menu.
+     * Delete a menu by its ID.
+     *
+     * @param int $menuId
+     * @return bool
      */
-    public function delete(int $id): bool;
-    /*** Get active menus only.
-     */
-    public function getActive();
+    // public function deleteMenu(int $menuId): bool;
+
     /**
-     * Get root menus with their children.
+     * Get the maximum order value for a given parent.
+     *
+     * @param int|null $parentId
+     * @return int
      */
-    public function getRootWithChildren();
-    /**
-     * Get menu children.
+    public function getMaxOrder(?int $parentId = null): int;
+    
+     /**
+     * Flattens a hierarchical menu array into a single-level array
+     * suitable for an HTML select dropdown.
+     *
+     * @param array $data The hierarchical menu data.
+     * @return array The flattened menu list.
      */
-    public function getChildren(int $parentId);
-    /**
-     * Check if menu exists.
-     */
-    public function exists(int $id): bool;
+    public function flattenMenu(array $data): array;
+
+    public function getPaginated(?int $perPage = null, array $column = ['*']): LengthAwarePaginator;
+
 }

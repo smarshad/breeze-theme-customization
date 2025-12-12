@@ -7,10 +7,12 @@ use App\Interfaces\CategoryRepositoryInterface;
 use App\Interfaces\ExpenseTypeRepositoryInterface;
 use App\Interfaces\PaymentMethodRepositoryInterface;
 use App\Interfaces\ExpenseRepositoryInterface;
+use App\Interfaces\MenuRepositoryInterface;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ExpenseTypeRepository;
 use App\Repositories\PaymentMethodRepository;
 use App\Repositories\ExpenseRepository;
+use App\Repositories\MenuRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,6 +37,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             ExpenseRepositoryInterface::class,
             ExpenseRepository::class
+        );
+
+        $this->app->bind(
+            MenuRepositoryInterface::class,
+            MenuRepository::class
         );
     }
 

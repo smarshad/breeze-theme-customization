@@ -36,7 +36,7 @@
                         <div class="form-group row">
                             <label for="name" class="col-3 col-form-label">Name</label>
                             <div class="col-3">
-                                <input type="text" class="form-control" id="name" name="name" value="{{old('name')}}" placeholder="create user">
+                                <input type="text" class="form-control" id="name" name="name" value="{{old('name')}}" placeholder="create user" autofocus>
                             </div>
                             <label for="module" class="col-3 col-form-label">Module</label>
                             <div class="col-3">
