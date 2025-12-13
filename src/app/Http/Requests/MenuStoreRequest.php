@@ -23,7 +23,7 @@ class MenuStoreRequest extends BaseFormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'route' => ['nullable', 'string', 'max:255'],
-            'url' => ['nullable', 'url', 'max:255'],
+            'url' => ['nullable', 'string', 'max:255'],
             'icon' => ['nullable', 'string', 'max:100'],
             'parent_id' => ['nullable', 'exists:menus,id'],
             'order' => ['nullable', 'integer', 'min:0'],
@@ -43,7 +43,8 @@ class MenuStoreRequest extends BaseFormRequest
             'route.string' => 'The route must be a valid string.',
             'route.max' => 'The route must not exceed 255 characters.',
 
-            'url.url' => 'Please enter a valid URL format (e.g., https://example.com).',
+            // 'url.url' => 'Please enter a valid URL format (e.g., https://example.com).',
+            'url.string' => 'Please enter a valid URL format (e.g., https://example.com).',
             'url.max' => 'The URL must not exceed 255 characters.',
 
             'icon.string' => 'The icon must be a valid string.',

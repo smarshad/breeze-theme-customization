@@ -10,10 +10,11 @@
 @php
 // Determine if we are in edit mode. Assume $menu is passed for editing.
 $isEdit = isset($menu) && $menu->id;
-$formAction = $isEdit ? route('menu.update', $menu->id) : route('menu.store');
+$formAction = $isEdit  ? route('menu.update', $menu) : route('menu.store');
 $pageTitle = $isEdit ? __('menu.edit_title') : __('menu.create_title');
 $breadcrumbActive = $isEdit ? 'Edit' : 'New';
 $buttonText = $isEdit ? __('global.update') : __('global.save');
+$parent_id = $menu && $menu->exists ? $menu->parent_id : NULL
 @endphp
 
 @section('content')
@@ -47,46 +48,41 @@ $buttonText = $isEdit ? __('global.update') : __('global.save');
                         </a>
                     </div>
                     <x-alert />
-                    <form id="editRoleForm" action="{{route('menu.store')}}" method="POST" class="data-ajax-submit form-horizontal">
+                    <form id="editRoleForm" action="{{$formAction}}" method="POST" class="data-ajax-submit form-horizontal">
                         @csrf
+                        @if($isEdit)
+                            @method('PUT')
+                        @endif
                         <div class="row mb-3">
                             <label for="name" class="col-3 col-form-label">Menu Name <span class="text-danger">*</span></label>
                             <div class="col-3">
-                                <input type="text" class="form-control" id="name" name="name" placeholder="«Name»">
+                                <input type="text" class="form-control" id="name" name="name" value="{{ $menu && $menu->exists ? $menu->name : '' }}" placeholder="«Name»">
                             </div>
                             <label for="parent_id" class="col-3 col-form-label">Parent Menu</label>
                             <div class="col-3">
-
-                                <select name="menu_item_id" id="menu_item_select" class="form-control">
+                                <select name="parent_id" id="parent_id" class="form-control">
                                     {{-- Optional: Add a default, unselectable option --}}
-                                    <option value="">-- Select a Menu Item --</option>
+                                    <option value="">-- Parent Menu --</option>
 
-                                    {{-- Loop through the flat array provided by the Repository/Service --}}
-                                    @foreach ($parentMenus as $item)
-                                    {{--
-                                        The key to the hierarchy is using $item['display_title'], 
-                                        which already contains the '-->' prefix for indentation.
-                                        The value is the item's ID.
-                                    --}}
-
-                                    <option value="{{ $item['id'] }}">
-                                        {{ $item['display_title'] }}
+                                    @foreach($parentMenus as $option)
+                                    <option value="{{ $option['id'] }}" @if($parent_id == $option['id']) selected @endif>
+                                        {{ $option['name'] }}
                                     </option>
                                     @endforeach
                                 </select>
-                                
+
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <label for="route" class="col-3 col-form-label">Laravel Route Name </label>
                             <div class="col-3">
-                                <input type="text" class="form-control" id="route" name="route" placeholder="route">
+                                <input type="text" class="form-control" id="route" name="route" placeholder="route" value="{{ $menu && $menu->exists ? $menu->route : '' }}">
                                 <div class="form-text">e.g., <code>menu.index</code></div>
                             </div>
                             <label for="url" class="col-3 col-form-label">External URL (Fallback)</label>
                             <div class="col-3">
-                                <input type="text" class="form-control" id="url" name="url" placeholder="Url">
+                                <input type="text" class="form-control" id="url" name="url" placeholder="Url" value="{{ $menu && $menu->exists ? $menu->url : '' }}">
                                 <div class="form-text">e.g., <code>https://example.com</code></div>
                             </div>
                         </div>
@@ -94,7 +90,7 @@ $buttonText = $isEdit ? __('global.update') : __('global.save');
                         <div class="row mb-3">
                             <label for="icon" class="col-3 col-form-label">Icon (Font Awesome Class)</label>
                             <div class="col-3">
-                                <input type="text" class="form-control" id="icon" name="icon" placeholder="icon">
+                                <input type="text" class="form-control" id="icon" name="icon" placeholder="icon" value="{{ $menu && $menu->exists ? $menu->icon : '' }}">
                                 <div class="form-text">e.g., <code>fa-solid fa-house</code></div>
                             </div>
                             <label for="permission_id" class="col-3 col-form-label">Required Permission</label>
@@ -102,7 +98,7 @@ $buttonText = $isEdit ? __('global.update') : __('global.save');
                                 <select class="form-control" id="permission_id" name="permission_id">
                                     <option value="">-- No Permission Required --</option>
                                     @foreach ($permissions as $permission)
-                                    <option value="{{ $permission->id }}" {{ old('permission_id', $menu->permission_id ?? '') == $permission->id ? 'selected' : '' }}>
+                                    <option value="{{ $permission->id }}" {{ $menu->permission_id == $permission->id ? 'selected' : '' }}>
                                         {{ $permission->name }} ({{ $permission->module ?? 'N/A' }})
                                     </option>
                                     @endforeach
@@ -113,12 +109,12 @@ $buttonText = $isEdit ? __('global.update') : __('global.save');
                         <div class="row mb-3">
                             <label for="order" class="col-3 col-form-label">Order</label>
                             <div class="col-3">
-                                <input type="number" class="form-control" id="order" name="order" placeholder="order">
+                                <input type="number" class="form-control" id="order" name="order" placeholder="order" value="{{ $menu && $menu->exists ? $menu->order : '' }}">
                             </div>
                             <label class="col-md-3 col-form-label" for="is_active">Is Active</label>
                             <div class="col-md-3 pt-10">
                                 <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="is_active" name="is_active" value="1">
+                                    <input type="checkbox" class="custom-control-input" id="is_active" name="is_active" value="1" {{ $menu->is_active == 1 ? 'checked' : '' }}>
                                     <label class="custom-control-label" for="is_active">&nbsp;</label>
                                 </div>
                             </div>
@@ -126,7 +122,7 @@ $buttonText = $isEdit ? __('global.update') : __('global.save');
 
                         <div class="row mb-0">
                             <div class="col-12 text-center">
-                                <button type="submit" class="btn btn-primary waves-effect waves-light">Create Menu</button>
+                                <button type="submit" class="btn btn-primary waves-effect waves-light">{{$buttonText}} {{__('menu.title')}}</button>
                                 <button type="reset" class="btn btn-danger waves-effect waves-light">Reset</button>
                             </div>
                         </div>

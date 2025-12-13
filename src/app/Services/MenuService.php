@@ -5,8 +5,11 @@ namespace App\Services;
 use App\DTOs\MenuDTO;
 use App\Interfaces\MenuRepositoryInterface;
 use App\Models\Menu;
+use App\Models\User;
+use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class MenuService
 {
@@ -49,7 +52,7 @@ class MenuService
         if ($data instanceof Collection) {
             $data = $data->toArray();
         }
-        
+
         // 2. Pass the now-native array to the Repository.
         return $this->menuRepository->flattenMenu($data);
     }
@@ -68,6 +71,157 @@ class MenuService
         } catch (\Throwable $e) {
             // Fallback for demonstration if Spatie is not installed
             return collect([]);
+        }
+    }
+
+
+    public function parentOptions(?int $excludeId = null): Collection
+    {
+        $menus = Menu::whereNull('parent_id')
+            ->with('childrenRecursive')
+            ->orderBy('order')
+            ->get();
+
+        return $this->flattenMenus($menus, 0, $excludeId);
+    }
+
+    private function flattenMenus($menus, int $level = 0, ?int $excludeId = null)
+    {
+        $result = collect();
+        foreach ($menus as $menu) {
+            if ($menu->id === $excludeId) {
+                continue;
+            }
+
+            $indent = str_repeat('—   ', $level);
+            $arrow  = $level > 0 ? '----> ' : '';
+
+            $result->push([
+                'id'   => $menu->id,
+                'name' => $indent . $arrow . $menu->name,
+            ]);
+
+            // ✅ USE childrenRecursive (NOT children)
+            if ($menu->childrenRecursive->isNotEmpty()) {
+                $result = $result->merge(
+                    $this->flattenMenus(
+                        $menu->childrenRecursive,
+                        $level + 1,
+                        $excludeId
+                    )
+                );
+            }
+        }
+
+        return $result;
+    }
+
+    public function sidebarMenus(User $user): Collection
+    {
+        $menus = Menu::whereNull('parent_id')
+            ->where('is_active', true)
+            ->with(['childrenRecursive.permission'])
+            ->orderBy('order')
+            ->get();
+
+        return $this->applyPermissionFilter($menus, $user);
+    }
+
+    /**
+     * 🔥 Filter menus bottom-up (children → parent)
+     */
+    private function applyPermissionFilter(Collection $menus, User $user): Collection
+    {
+        return $menus->map(function (Menu $menu) use ($user) {
+
+            // 1️⃣ FIRST: filter children recursively
+            $filteredChildren = collect();
+
+            if ($menu->childrenRecursive->isNotEmpty()) {
+                $filteredChildren = $this->applyPermissionFilter(
+                    $menu->childrenRecursive,
+                    $user
+                );
+            }
+
+            // Replace children with filtered result
+            $menu->setRelation('childrenRecursive', $filteredChildren);
+
+            // 2️⃣ SECOND: decide if THIS menu should appear
+            $canViewThisMenu =
+                $this->canViewMenu($menu, $user)
+                || $filteredChildren->isNotEmpty();
+                logger()->info('MENU', [
+                    'name' => $menu->name,
+                    'perm' => $menu->permission_id,
+                    'can'  => $this->canViewMenu($menu, $user),
+                ]);
+                
+            return $canViewThisMenu ? $menu : null;
+        })->filter()->values();
+    }
+
+    /**
+     * 🔐 Permission check for a single menu
+     */
+    private function canViewMenu(Menu $menu, User $user): bool
+    {
+        // Super Admin sees everything
+        if ($user->hasRole('Super Admin')) {
+            return true;
+        }
+
+        // Leaf menu with no permission → show
+        if (!$menu->permission_id && $menu->childrenRecursive->isEmpty()) {
+            return true;
+        }
+
+        // Menu with permission → check it
+        if ($menu->permission_id) {
+            static $permissionIds = null;
+
+            if ($permissionIds === null) {
+                $permissionIds = $user->getAllPermissions()->pluck('id');
+            }
+
+            return $permissionIds->contains($menu->permission_id);
+        }
+
+        // Parent menu with no permission and no visible children → HIDE
+        return false;
+    }
+
+    public function update(Menu $menu, MenuDTO $dto): Menu
+    {
+        return $this->menuRepository->update($menu, $dto->toArray());
+    }
+
+    public function delete(int $id): bool
+    {
+        $this->validateMenuCanBeDeleted($id);
+
+        // Perform deletion
+
+
+        $delete = $this->menuRepository->delete($id);
+
+        if (!$delete) {
+            throw new DomainException('The repository failed to delete the Menu.');
+        }
+
+
+        return true;
+    }
+
+    /**
+     * Business rule: Check if the payment method can be deleted.
+     * @throws DomainException
+     */
+    private function validateMenuCanBeDeleted(int $id): void
+    {
+        if ($this->menuRepository->hasRelatedChild($id)) {
+            // Use DomainException with a specific message for the controller to handle
+            throw new DomainException('Cannot deletepayment method. Related expense records exist.');
         }
     }
 }

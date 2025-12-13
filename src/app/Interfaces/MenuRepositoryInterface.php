@@ -56,8 +56,8 @@ interface MenuRepositoryInterface
      * @return int
      */
     public function getMaxOrder(?int $parentId = null): int;
-    
-     /**
+
+    /**
      * Flattens a hierarchical menu array into a single-level array
      * suitable for an HTML select dropdown.
      *
@@ -68,4 +68,15 @@ interface MenuRepositoryInterface
 
     public function getPaginated(?int $perPage = null, array $column = ['*']): LengthAwarePaginator;
 
+    /**
+     * Update an existing Record
+     */
+
+    public function update(Menu $menu, array $data): Menu;
+
+    /**
+     * Check if there are any related submenu records for a given  ID.
+     */
+    public function hasRelatedChild(int $id): bool;
+    
 }

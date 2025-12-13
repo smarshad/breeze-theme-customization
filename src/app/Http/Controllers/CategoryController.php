@@ -91,7 +91,7 @@ class CategoryController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'An unexpected error occurred.',
+                'message' => 'An unexpected error occurred 5001.',
             ], 500);
         }
     }
@@ -154,7 +154,7 @@ class CategoryController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'An unexpected error occurred.',
+                'message' => 'An unexpected error occurred 422.',
             ], 422);
         }
     }
@@ -186,7 +186,7 @@ class CategoryController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'An unexpected error occurred.',
+                'message' => 'An unexpected error occurred 500.',
             ], 500);
         }
        

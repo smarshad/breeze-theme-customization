@@ -84,11 +84,15 @@ class BaseController extends Controller
      */
     protected function handleUnexpectedException(Exception $e): JsonResponse
     {
+        if ($e instanceof DomainException) {
+            return $this->errorResponse($e->getMessage(), 409);
+        }
+        
         $this->logError('Unexpected Error', [
             'message' => $e->getMessage(),
             'trace'   => $e->getTraceAsString(),
         ]);
-        return $this->errorResponse('An unexpected error occurred.', 500);
+        return $this->errorResponse('An unexpected error occurred base.', 500);
     }
 
     /**

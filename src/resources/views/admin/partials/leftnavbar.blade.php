@@ -4,7 +4,7 @@
     <div class="slimscroll-menu">
 
         <!--- Sidemenu -->
-        <div id="sidebar-menu">
+        <!-- <div id="sidebar-menu">
 
             <ul class="metismenu" id="side-menu">
 
@@ -341,8 +341,23 @@
     
             </ul>
 
+        </div> -->
+
+        <div id="sidebar-menu">
+
+            <ul class="metismenu" id="side-menu">
+
+                <li class="menu-title">Navigation</li>
+                @inject('menuService', 'App\Services\MenuService')
+
+                @php
+                $menus = $menuService->sidebarMenus(auth()->user());
+                @endphp
+
+                @include('admin.partials.sidebar-menu', ['menus' => $menus])
+                <!-- End Sidebar -->
+            </ul>
         </div>
-        <!-- End Sidebar -->
 
         <div class="clearfix"></div>
 

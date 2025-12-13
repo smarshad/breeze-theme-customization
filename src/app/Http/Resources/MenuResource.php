@@ -32,7 +32,7 @@ class MenuResource extends JsonResource
             }),
             // Recursively load children, useful for nested menu APIs
             'children' => MenuResource::collection($this->whenLoaded('children')),
-            'created_at' => $this->created_at,
+            'created_at' => $this->created_at->format('d/M/Y H:i:s'),
             'updated_at' => $this->updated_at,
         ];
     }

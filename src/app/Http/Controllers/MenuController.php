@@ -41,12 +41,11 @@ class MenuController extends BaseController
 
     public function create(): View
     {
-        $menus = $this->menuService->getMenus();
+        $menu = new Menu();
         $permissions = $this->menuService->getAllPermissions();
-        $parentMenus = $this->menuService->flattenMenu($menus);
+        $parentMenus = $this->menuService->parentOptions();
 
-        // dd($parentMenus);
-        return view('admin.menu.create', compact('parentMenus', 'permissions'));
+        return view('admin.menu.create', compact('parentMenus', 'permissions', 'menu'));
     }
 
     /**
@@ -62,7 +61,6 @@ class MenuController extends BaseController
             // Validate and prepare DTO
             $dto = $this->createDTOFromRequest($request);
 
-            // Service layer creation
             $data  = $this->menuService->createMenu($dto);
 
             return $this->successResponse(new MenuResource($data), 'Menu Succesfully Created', 201, ['redirect' => route('menu.index')]);
@@ -74,6 +72,61 @@ class MenuController extends BaseController
             return $this->handleUnexpectedException($e);
         }
     }
+
+    public function edit(Menu $menu): View
+    {
+        $parentMenus = $this->menuService->parentOptions();
+        $permissions = $this->menuService->getAllPermissions();
+        return view('admin.menu.create', compact('menu', 'parentMenus', 'permissions'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function update(MenuStoreRequest $request, Menu $menu)
+    {
+
+        try {
+            // Log raw incoming data
+            $this->logInfo('Raw data for update Menu', $request->all());
+
+            // Validate and prepare DTO
+            $dto = $this->createDTOFromRequest($request);
+
+            $data  = $this->menuService->update($menu, $dto);
+
+            return $this->successResponse(new MenuResource($data), 'Menu Succesfully Updated', 200, ['redirect' => route('menu.index')]);
+        } catch (ValidationException $e) {
+            return $this->handleValidationException($e);
+        } catch (DomainException $e) {
+            return $this->handleDomainException($e);
+        } catch (Exception $e) {
+            return $this->handleUnexpectedException($e);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+
+    public function destroy(string $id)
+    {
+        try {
+            // Log raw incoming data
+            $this->logInfo('Raw request data for delete Menu');
+
+            $delete = $this->menuService->delete($id);
+
+            if ($delete) {
+                return $this->successResponse(NULL, 'Menu Deleted Successfully');
+            } else {
+                return $this->errorResponse('Some Record exist with this payment type', 409);
+            }
+        } catch (Exception $e) {
+            return $this->handleUnexpectedException($e);
+        }
+    }
+
     private function createDTOFromRequest(Request $request): MenuDTO
     {
         $validatedData = $request->validated();

@@ -6,12 +6,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Menu extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'route',
+        'url',
         'icon',
         'parent_id',
         'order',
@@ -42,7 +46,9 @@ class Menu extends Model
 
     public function children(): HasMany
     {
-        return $this->hasMany(Menu::class, 'parent_id')->orderBy('order');
+        return $this->hasMany(Menu::class, 'parent_id')
+            ->where('is_active', true)
+            ->orderBy('order');
     }
 
     /**
@@ -71,5 +77,8 @@ class Menu extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    
+    public function childrenRecursive()
+    {
+        return $this->children()->with('childrenRecursive');
+    }
 }

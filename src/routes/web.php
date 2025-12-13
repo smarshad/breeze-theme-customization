@@ -126,14 +126,16 @@ Route::middleware(['auth', 'locked'])->group(function () {
         ->name('menu.')
         ->controller(MenuController::class)
         ->group(function () {
-            Route::get('/', 'index')->name('index');                   // paymentmethod.index
-            Route::get('/getAll', 'getAll')->name('list');             // paymentmethod.list
-            Route::get('/create', 'create')->name('create');           // paymentmethod.create
-            Route::post('/store', 'store')->name('store');             // paymentmethod.store
-            Route::get('/{id}/edit', 'edit')->name('edit');            // paymentmethod.edit
-            Route::put('/{id}', 'update')->name('update');             // paymentmethod.update
-            Route::delete('/{id}', 'destroy')->name('destroy');        // paymentmethod.destroy
+            Route::get('/', 'index')->name('index');
+            Route::get('/getAll', 'getAll')->name('list');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+
+            Route::get('/{menu}/edit', 'edit')->name('edit');
+            Route::put('/{menu}', 'update')->name('update');
+            Route::delete('/{menu}', 'destroy')->name('destroy');
         });
+
 
     /**
      * Expense

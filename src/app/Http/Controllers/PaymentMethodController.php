@@ -82,8 +82,9 @@ class PaymentMethodController extends BaseController
      * update the specified resource in storage
      */
 
-    public function update(UpdateRequest $request) {
-        try{
+    public function update(UpdateRequest $request)
+    {
+        try {
             $this->logInfo('Raw data for update Payment method', $request->all());
 
             // valiadate data and make DTO
@@ -91,43 +92,44 @@ class PaymentMethodController extends BaseController
 
             $udapteData = $this->service->update($request->id, $dto);
 
-            return $this->successResponse($udapteData,
+            return $this->successResponse(
+                $udapteData,
                 'Payment method successfully updated.',
                 200,
                 ['callback' => route('paymentmethod.list')]
             );
-
-        } catch(ValidationException $e){
+        } catch (ValidationException $e) {
             $this->handleValidationException($e);
-        } catch(DomainException $e){
+        } catch (DomainException $e) {
             $this->handleDomainException($e);
-        } catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             $this->handleQueryException($e);
-        } catch (Exception $e){
+        } catch (Exception $e) {
             $this->handleUnexpectedException($e);
         }
     }
 
-     /**
+    /**
      * Remove the specified resource from storage.
      */
 
-     public function destroy(string $id){
-        try{
+    public function destroy(string $id)
+    {
+        try {
             // Log raw incoming data
             $this->logInfo('Raw request data for delete payment method');
 
             $delete = $this->service->delete($id);
 
-            if($delete){
+            if ($delete) {
                 return $this->successResponse(NULL, 'Payment Method Deleted Successfully');
-            }else{
-                return $this->errorResponse('Some Record exist with this payment type',409);
+            } else {
+                return $this->errorResponse('Some Record exist with this payment type', 409);
             }
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             return $this->handleUnexpectedException($e);
         }
-     }
+    }
 
     /**
      * Helper to create DTO from request.
