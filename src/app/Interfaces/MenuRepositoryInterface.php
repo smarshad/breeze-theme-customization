@@ -75,7 +75,7 @@ interface MenuRepositoryInterface
     public function update(Menu $menu, array $data): Menu;
 
     /**
-     * Check if there are any related submenu records for a given  ID.
+     * Check if there are any related expense records for a given payment method ID.
      */
     public function hasRelatedChild(int $id): bool;
     

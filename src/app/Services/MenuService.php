@@ -151,18 +151,20 @@ class MenuService
             $canViewThisMenu =
                 $this->canViewMenu($menu, $user)
                 || $filteredChildren->isNotEmpty();
-                logger()->info('MENU', [
-                    'name' => $menu->name,
-                    'perm' => $menu->permission_id,
-                    'can'  => $this->canViewMenu($menu, $user),
-                ]);
-                
+            logger()->info('MENU', [
+                'name' => $menu->name,
+                'perm' => $menu->permission_id,
+                'can'  => $this->canViewMenu($menu, $user),
+            ]);
+
             return $canViewThisMenu ? $menu : null;
         })->filter()->values();
     }
 
+    
     /**
      * 🔐 Permission check for a single menu
+     * Checks by permission name for efficiency.
      */
     private function canViewMenu(Menu $menu, User $user): bool
     {
@@ -175,17 +177,31 @@ class MenuService
         if (!$menu->permission_id && $menu->childrenRecursive->isEmpty()) {
             return true;
         }
-
         // Menu with permission → check it
         if ($menu->permission_id) {
-            static $permissionIds = null;
 
-            if ($permissionIds === null) {
-                $permissionIds = $user->getAllPermissions()->pluck('id');
+            $permissionName = $menu->permission->name ?? null;
+            if (!$permissionName) {
+                return false;
             }
-
-            return $permissionIds->contains($menu->permission_id);
+        
+            static $permissionNames = null;
+        
+            if ($permissionNames === null) {
+                $permissionNames = $user->getAllPermissions()->pluck('name');
+            }
+        
+            // 🔥 allow *.own OR *.all
+            if (str_ends_with($permissionName, '.all')) {
+                $ownPermission = str_replace('.all', '.own', $permissionName);
+        
+                return $permissionNames->contains($permissionName)
+                    || $permissionNames->contains($ownPermission);
+            }
+        
+            return $permissionNames->contains($permissionName);
         }
+        
 
         // Parent menu with no permission and no visible children → HIDE
         return false;
