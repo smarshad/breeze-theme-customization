@@ -67,4 +67,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(LoginHistory::class);
     }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('Super Admin');
+    }
 }

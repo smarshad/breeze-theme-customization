@@ -9,15 +9,39 @@ use App\Services\CategoryService;
 use Illuminate\Http\Request;
 use App\DTOs\CategoryDTO;
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Support\Facades\Auth;
+
 class CategoryController extends Controller
 {
+    use AuthorizesRequests, ValidatesRequests;
+
     public function __construct(protected CategoryService $categoryService) {}
 
     public function list(Request $request): JsonResponse
     {
+        // 1. Authorize the action using the CategoryPolicy
+        // This will throw an AuthorizationException (403 Forbidden) if the user is not authorized
+        // to view any categories (i.e., viewAny returns false).
+        $this->authorize('viewAny', Category::class);
+
+        // 2. Get the authenticated user.
+        $user = Auth::user();
+
+        // Safety check: If the route is not protected by 'auth' middleware, $user could be null.
+        // We ensure the user is an instance of the User model before passing it to the service.
+        if (!$user instanceof User) {
+            // If the user is not authenticated, we throw an exception.
+            // In a real Laravel app, the 'auth' middleware should handle this,
+            // but this check adds robustness.
+            abort(401, 'Unauthenticated.');
+        }
+
         $perPage            = $request->get('per_page', 5);
-        $categories         = $this->categoryService->getCategoriesPaginated($perPage);
+        $categories         = $this->categoryService->getCategoriesPaginated($user, $perPage);
         $draw               = $request->get('draw', 1);
         $response           = CategoryResource::collection($categories)->response()->getData(true);
         $response['draw']   = (int) $draw;

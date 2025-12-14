@@ -8,11 +8,13 @@ use App\Interfaces\ExpenseTypeRepositoryInterface;
 use App\Interfaces\PaymentMethodRepositoryInterface;
 use App\Interfaces\ExpenseRepositoryInterface;
 use App\Interfaces\MenuRepositoryInterface;
+use App\Models\User;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ExpenseTypeRepository;
 use App\Repositories\PaymentMethodRepository;
 use App\Repositories\ExpenseRepository;
 use App\Repositories\MenuRepository;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
             CategoryRepositoryInterface::class,
             CategoryRepository::class
         );
-    
+
         $this->app->bind(
             ExpenseTypeRepositoryInterface::class,
             ExpenseTypeRepository::class
@@ -50,6 +52,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::before(function (User $user, string $ability) {
+            if ($user->isSuperAdmin()) {
+                return true; // Grant all access
+            }
+        });
     }
 }

@@ -151,22 +151,17 @@ class MenuService
             $canViewThisMenu =
                 $this->canViewMenu($menu, $user)
                 || $filteredChildren->isNotEmpty();
-            logger()->info('MENU', [
-                'name' => $menu->name,
-                'perm' => $menu->permission_id,
-                'can'  => $this->canViewMenu($menu, $user),
-            ]);
 
             return $canViewThisMenu ? $menu : null;
         })->filter()->values();
     }
 
-    
+
     /**
      * 🔐 Permission check for a single menu
      * Checks by permission name for efficiency.
      */
-    private function canViewMenu(Menu $menu, User $user): bool
+    private function canViewMenuOldWorking(Menu $menu, User $user): bool
     {
         // Super Admin sees everything
         if ($user->hasRole('Super Admin')) {
@@ -184,26 +179,81 @@ class MenuService
             if (!$permissionName) {
                 return false;
             }
-        
+
             static $permissionNames = null;
-        
+
             if ($permissionNames === null) {
                 $permissionNames = $user->getAllPermissions()->pluck('name');
             }
-        
+
             // 🔥 allow *.own OR *.all
             if (str_ends_with($permissionName, '.all')) {
                 $ownPermission = str_replace('.all', '.own', $permissionName);
-        
+
                 return $permissionNames->contains($permissionName)
                     || $permissionNames->contains($ownPermission);
             }
-        
+
             return $permissionNames->contains($permissionName);
         }
-        
+
 
         // Parent menu with no permission and no visible children → HIDE
+        return false;
+    }
+
+    private function canViewMenu(Menu $menu, User $user): bool
+    {
+
+        // Debug info
+        // logger()->info('Checking menu', [
+        //     'menu_id' => $menu->id,
+        //     'menu_name' => $menu->name,
+        //     'permission_id' => $menu->permission_id,
+        //     'permission_name' => $menu->permission->name ?? 'NULL',
+        //     'user_permissions' => $user->getPermissionNames()->toArray()
+        // ]);
+        // Super Admin sees everything
+        if ($user->hasRole('Super Admin')) {
+            return true;
+        }
+
+        // Menu without permission requirement
+        if (!$menu->permission_id) {
+            return true;
+        }
+
+        // Get the permission
+        $permission = $menu->permission;
+        if (!$permission) {
+            return false;
+        }
+
+        $permissionName = $permission->name;
+
+        // User's permissions (cached for performance)
+        static $userPermissions = null;
+        if ($userPermissions === null) {
+            $userPermissions = $user->getAllPermissions()->pluck('name');
+        }
+
+        // Check for exact permission
+        if ($userPermissions->contains($permissionName)) {
+            return true;
+        }
+
+        // Handle .all/.own fallback logic
+        if (str_ends_with($permissionName, '.all')) {
+            $ownPermission = str_replace('.all', '.own', $permissionName);
+            return $userPermissions->contains($ownPermission);
+        }
+
+        // Also check for the reverse: if user has .all but menu requires .own
+        if (str_ends_with($permissionName, '.own')) {
+            $allPermission = str_replace('.own', '.all', $permissionName);
+            return $userPermissions->contains($allPermission);
+        }
+
         return false;
     }
 

@@ -6,6 +6,7 @@ namespace App\Services;
 use App\DTOs\CategoryDTO;
 use App\Interfaces\CategoryRepositoryInterface;
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -15,10 +16,23 @@ class CategoryService
         protected CategoryRepositoryInterface $categoryRepository
     ) {}
 
-    public function getCategoriesPaginated(int $perPage = 15): LengthAwarePaginator
+    public function getCategoriesPaginated(User $user, int $perPage = 15): LengthAwarePaginator
     {
+        $userId = null; // Default: view all
+
+        // Check for 'view all' permission
+        if ($user->can('category.view.all')) {
+            $userId = null; // No filtering needed
+        } elseif ($user->can('category.view.own')) {
+            // If only 'view own' is granted, filter by the user's ID
+            $userId = $user->id;
+        }
+        // The controller's authorize check should handle the case where neither is true.
+
         // Business logic: e.g., apply global filters based on user context
-        return $this->categoryRepository->getPaginated($perPage);
+        // Explicitly passing ['*'] for columns to prevent the reported TypeError,
+        // even though it has a default value in the repository.
+        return $this->categoryRepository->getPaginated($perPage, ['*'], $userId);
     }
 
     public function getCategoryById(int $categoryId): Category
