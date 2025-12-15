@@ -22,16 +22,15 @@ class UpdateExpenseTypeRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        // First, try to get the category object from the route.
-        // This works for routes like /categories/{category}
         $expenseType = $this->route('expenseType');
 
-        // If that fails, try to get the ID directly from the route parameters.
-        // This works for routes like /categories/{id}
-        $expenseTypeId = $expenseType ? $expenseType->id : $this->route('id');
-
         return [
-            'name'        => ['required', 'string', 'max:255', Rule::unique('expanse_types')->ignore($expenseTypeId)],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('expense_types')->ignore($expenseType?->id),
+            ],
             'description' => ['nullable', 'string'],
         ];
     }

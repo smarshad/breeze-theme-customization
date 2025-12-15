@@ -3,6 +3,7 @@
 namespace App\Http\Requests\ExpenseType;
 
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class StoreExpenseTypeRequest extends BaseFormRequest
 {
@@ -11,6 +12,14 @@ class StoreExpenseTypeRequest extends BaseFormRequest
      */
     public function authorize(): bool
     {
+        // return true;
+        // $expensetype = $this->route('expensetype');
+        if (! auth()->user()->can('create', ExpenseType::class)) {
+            throw new AuthorizationException(
+                'You do not have permission to create an expense type.'
+            );
+        }
+    
         return true;
     }
 

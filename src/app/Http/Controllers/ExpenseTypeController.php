@@ -10,13 +10,15 @@ use Illuminate\Http\JsonResponse;
 use App\DTOs\ExpenseTypeDTO;
 use Illuminate\Http\Request;
 use App\Models\ExpenseType;
+use App\Models\User;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
+
 use DomainException;
 use Exception;
 
 class ExpenseTypeController extends BaseController // Extend the new BaseController
 {
-
     public function __construct(protected ExpenseTypeService $expenseTypeService) {}
 
     /**
@@ -36,8 +38,25 @@ class ExpenseTypeController extends BaseController // Extend the new BaseControl
 
     public function getAll(Request $request): JsonResponse
     {
+
+        // 1. Authorize the action using the CategoryPolicy
+        // This will throw an AuthorizationException (403 Forbidden) if the user is not authorized
+        // to view any categories (i.e., viewAny returns false).
+        $this->authorize('viewAny', ExpenseType::class);
+
+        // 2. Get the authenticated user.
+        $user = Auth::user();
+        // Safety check: If the route is not protected by 'auth' middleware, $user could be null.
+        // We ensure the user is an instance of the User model before passing it to the service.
+        if (!$user instanceof User) {
+            // If the user is not authenticated, we throw an exception.
+            // In a real Laravel app, the 'auth' middleware should handle this,
+            // but this check adds robustness.
+            abort(401, 'Unauthenticated.');
+        }
+
         $perPage            = $request->get('per_page', 5);
-        $categories         = $this->expenseTypeService->getExpenseTypePaginated($perPage);
+        $categories         = $this->expenseTypeService->getExpenseTypePaginated($user, $perPage);
         $draw               = $request->get('draw', 1);
         $response           = ExpenseTypeResource::collection($categories)->response()->getData(true);
         $response['draw']   = (int) $draw;
@@ -53,6 +72,7 @@ class ExpenseTypeController extends BaseController // Extend the new BaseControl
     public function store(StoreExpenseTypeRequest $request)
     {
         try {
+            $this->authorize('create', ExpenseType::class);
             // Log raw incoming data
             $this->logInfo('Raw request data for New ExpenseType', $request->all());
 
@@ -69,7 +89,6 @@ class ExpenseTypeController extends BaseController // Extend the new BaseControl
                 201,
                 ['callback' => route('expensetype.list')]
             );
-
         } catch (ValidationException $e) {
             return $this->handleValidationException($e);
         } catch (DomainException $e) {
@@ -82,24 +101,31 @@ class ExpenseTypeController extends BaseController // Extend the new BaseControl
     /**
      * Display the specified resource.
      */
-    public function edit(string $id)
+
+
+    public function edit(ExpenseType $expenseType)
     {
-        $expenseType = ExpenseType::findOrFail($id);
+        $this->authorize('update', $expenseType);
         $this->logInfo('edit', ['expenseType' => $expenseType->id]);
-        return view('admin.expensetype._form', ['expensetype' => $expenseType]);
+
+        return view('admin.expensetype._form', compact('expensetype'));
     }
+
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateExpenseTypeRequest $request)
+    public function update(UpdateExpenseTypeRequest $request, ExpenseType $expenseType)
     {
         try {
+
+            $this->authorize('update', $expenseType);
             $this->logInfo('Raw request data for UpdateExpenseTypeRequest', $request->all());
 
             $dto = $this->createDTOFromRequest($request);
 
-            $expenseType = $this->expenseTypeService->update($request->id, $dto);
+            $expenseType = $this->expenseTypeService->update($expenseType->id, $dto);
 
             // Use common success response helper
             return $this->successResponse(
@@ -108,15 +134,10 @@ class ExpenseTypeController extends BaseController // Extend the new BaseControl
                 200,
                 ['callback' => route('expensetype.list')]
             );
-
         } catch (ValidationException $e) {
             return $this->handleValidationException($e);
         } catch (DomainException $e) {
             return $this->handleDomainException($e);
-        } catch (\Illuminate\Database\QueryException $e) { // Need to catch QueryException here for update
-            return $this->handleQueryException($e);
-        } catch (Exception $e) {
-            return $this->handleUnexpectedException($e);
         }
     }
 
@@ -141,22 +162,40 @@ class ExpenseTypeController extends BaseController // Extend the new BaseControl
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(ExpenseType $expenseType)
     {
         try {
-            // Log raw incoming data
-            $this->logInfo('Raw request data for delete expenseType', [$id]);
-            $data = $this->expenseTypeService->delete($id);
+            $this->authorize('delete', $expenseType);
 
-            if($data){
+            // Log raw incoming data
+            $this->logInfo('Raw request data for delete expenseType', [$expenseType->id]);
+            $data = $this->expenseTypeService->delete($expenseType->id);
+
+            if ($data) {
                 return $this->successResponse(null, 'expenseType deleted successfully.');
-            }else{
+            } else {
                 // This is a business logic error, but since it's a simple boolean return,
                 // we'll treat it as a failure to delete due to constraints.
                 return $this->errorResponse('Some record exist with this expenseType.', 409);
             }
-        } catch (Exception $e) {
-            return $this->handleUnexpectedException($e);
+        } catch (ValidationException $e) {
+
+            // Validation-specific errors
+            logAction('Validation Error', 'error', $e->errors());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation Failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (DomainException $e) {
+
+            logAction('Domain Error', 'error', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
         }
     }
 }

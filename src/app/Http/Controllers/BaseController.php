@@ -6,6 +6,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Validation\ValidatesRequests;
 use DomainException;
 use Exception;
 
@@ -16,7 +18,7 @@ use Exception;
 class BaseController extends Controller
 {
     // --- Response Helpers ---
-
+    use AuthorizesRequests, ValidatesRequests;
     /**
      * Standard success JSON response.
      */

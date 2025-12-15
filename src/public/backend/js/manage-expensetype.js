@@ -58,8 +58,11 @@ $(function () {
                 { data: "created_at" },
                 { data: "created_by" },
                 {
-                    data: "id",
-                    render: id => renderActionButtons(id)
+                    render: function (data, type, row) {
+                        // 'row' now contains the full object for the current row,
+                        // including the 'can' permissions from the backend.
+                        return renderActionButtons(row);
+                    }
                 }
             ],
 
@@ -75,40 +78,44 @@ $(function () {
             }
         });
     }
-    function renderActionButtons(id) {
-        const editUrl = window.routes.edit.replace(':id', id);
-        const deleteUrl = window.routes.delete.replace(':id', id);
+    
+    function renderActionButtons(rowData) {
+        // Start with an empty string for the buttons
+        let buttonsHtml = '';
 
-        const footerHtml = `
-            <button type="submit" class="btn btn-primary waves-effect waves-light js-submit-btn">
-                ${window.lang.edit}
-            </button>
-            <button type="button" class="btn btn-info waves-effect waves-light" data-dismiss="modal">
-                ${window.lang.close}
-            </button>
-        `.trim();
+        // --- PERMISSION-BASED RENDERING ---
 
-        const titleText = `${window.lang.edit} ${window.lang.category_title}`;
+        // 1. Check if the user can UPDATE this category
+        if (rowData.can && rowData.can.update) {
+            const editUrl = window.routes.edit.replace(':id', rowData.id);
+            const titleText = `${window.lang.edit} ${window.lang.title}`;
 
-        return `
+            buttonsHtml += `
             <button
                 class="btn btn-sm btn-primary openModel"
-                data-footer='<button type="submit" class="btn btn-primary waves-effect waves-light js-submit-btn">
-                ${window.lang.edit}
-            </button>
-            <button type="button" class="btn btn-info waves-effect waves-light" data-dismiss="modal">
-                ${window.lang.close}
-            </button>'
+                data-footer='<button type="submit" class="btn btn-primary waves-effect waves-light js-submit-btn">${window.lang.edit}</button><button type="button" class="btn btn-info waves-effect waves-light" data-dismiss="modal">${window.lang.close}</button>'
                 data-url="${editUrl}"
-                data-id="${id}"
+                data-id="${rowData.id}"
                 data-size="lg"
                 data-title="${titleText}">
                 Edit
             </button>
-            <button class="btn btn-sm btn-danger btn-delete" data-action="${deleteUrl}" data-id="${id}">
+        `;
+        }
+
+        // 2. Check if the user can DELETE this category
+        if (rowData.can && rowData.can.delete) {
+            const deleteUrl = window.routes.delete.replace(':id', rowData.id);
+
+            buttonsHtml += `
+            <button class="btn btn-sm btn-danger btn-delete" data-action="${deleteUrl}" data-id="${rowData.id}">
                 Delete
             </button>
         `;
+        }
+
+        // Return the generated HTML (will be empty if user has no permissions)
+        return buttonsHtml.trim();
     }
 
     function renderStatusBadge(isActive) {

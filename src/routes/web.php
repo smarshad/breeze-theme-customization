@@ -99,9 +99,9 @@ Route::middleware(['auth', 'locked'])->group(function () {
             Route::get('/getAll', 'getAll')->name('list');             // expensetype.list
             Route::get('/create', 'create')->name('create');           // expensetype.create
             Route::post('/store', 'store')->name('store');             // expensetype.store
-            Route::get('/{id}/edit', 'edit')->name('edit');            // expensetype.edit
-            Route::put('/{id}', 'update')->name('update');             // expensetype.update
-            Route::delete('/{id}', 'destroy')->name('destroy');        // expensetype.destroy
+            Route::get('/{expenseType}/edit', 'edit')->name('edit');            // expensetype.edit
+            Route::put('/{expenseType}', 'update')->name('update');             // expensetype.update
+            Route::delete('/{expenseType}', 'destroy')->name('destroy');        // expensetype.destroy
         });
 
     /**

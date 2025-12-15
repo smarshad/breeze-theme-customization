@@ -9,6 +9,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Exceptions\CannotDeleteExpenseTypeException;
+use App\Models\User;
 use DomainException;
 
 class ExpenseTypeService
@@ -21,9 +22,24 @@ class ExpenseTypeService
     /**
      * Retrieves paginated expense types.
      */
-    public function getExpenseTypePaginated(int $perPage = 15): LengthAwarePaginator {
+    public function getExpenseTypePaginated(User $user, int $perPage = 15): LengthAwarePaginator
+    {
+        $userId = null; // Default: view all
+
+        // Check for 'view all' permission
+        if ($user->can('expensetype.view.all')) {
+            $userId = null; // No filtering needed
+        } elseif ($user->can('expensetype.view.own')) {
+            // If only 'view own' is granted, filter by the user's ID
+            $userId = $user->id;
+        }
+        // The controller's authorize check should handle the case where neither is true.
+
+        // Business logic: e.g., apply global filters based on user context
+        // Explicitly passing ['*'] for columns to prevent the reported TypeError,
+        // even though it has a default value in the repository.
         // Caching is typically not used for paginated results unless the query is very expensive and static.
-        return $this->expenseTypeRepository->getPaginated($perPage);
+        return $this->expenseTypeRepository->getPaginated($perPage, ['*'], $userId);
     }
 
     /**
@@ -42,10 +58,10 @@ class ExpenseTypeService
     {
         return DB::transaction(function () use ($expenseTypeDTO) {
             $expenseType = $this->expenseTypeRepository->create($expenseTypeDTO->toArray());
-            
+
             // Invalidate the cache for the 'all' list
             Cache::forget(self::CACHE_KEY_ALL);
-            
+
             return $expenseType;
         });
     }
@@ -74,22 +90,22 @@ class ExpenseTypeService
     {
         // Business logic validation
         $this->validateExpenseTypeCanBeDeleted($id);
-        
+
         // Perform deletion
         $deleted = $this->expenseTypeRepository->delete($id);
-        
+
         if (!$deleted) {
             // Throw a more specific exception if the repository failed to delete for an unknown reason
             throw new DomainException('The repository failed to delete the expense type.');
         }
-        
+
         // Invalidate the cache for the 'all' list
         Cache::forget(self::CACHE_KEY_ALL);
-        
+
         return true;
     }
 
-     /**
+    /**
      * Business rule: Check if the expense type can be deleted.
      * @throws DomainException
      */

@@ -16,10 +16,30 @@ class ExpenseTypeRepository implements ExpenseTypeRepositoryInterface
         return $this->model->all();
     }
 
-    public function getPaginated(int $perPage = 15, array $columns = ['*']): LengthAwarePaginator
-    {
-        return $this->model->paginate($perPage, $columns);
+    public function getPaginated(
+        int $perPage = 15,
+        array $columns = ['*'],
+        ?int $userId = null
+    ): LengthAwarePaginator {
+    
+        $query = $this->model->query();
+    
+        if ($userId !== null) {
+            $query->where('created_by', $userId);
+        }
+
+
+            $sql = vsprintf(
+                str_replace('?', '%s', $query->toSql()),
+                collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()
+            );
+
+            \Log::info($sql);
+            \Log::info($userId);
+    
+        return $query->paginate($perPage, $columns);
     }
+    
 
     public function findById(int $id): ExpenseType
     {

@@ -192,7 +192,20 @@ class CategoryController extends Controller
                 'success' => false,
                 'message' => 'Some records exist with this category.',
             ], 409);
+        } catch (ValidationException $e) {
+
+            // Validation-specific errors
+            logAction('Validation Error', 'error', $e->errors());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation Failed.',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (DomainException $e) {
+
+            logAction('Domain Error', 'error', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
