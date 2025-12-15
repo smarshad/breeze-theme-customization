@@ -78,14 +78,15 @@ Route::middleware(['auth', 'locked'])->group(function () {
         ->name('category.')
         ->controller(CategoryController::class)
         ->group(function () {
-            Route::get('/', 'index')->name('index');                   // category.index
-            Route::get('/list', 'list')->name('list');                 // category.list
-            Route::get('/create', 'create')->name('create');           // category.create
-            Route::post('/store', 'store')->name('store');             // category.store
-            Route::get('/{id}/edit', 'edit')->name('edit');            // category.edit
-            Route::put('/{id}', 'update')->name('update');             // category.update
-            Route::delete('/{id}', 'destroy')->name('destroy');        // category.destroy
+            Route::get('/', 'index')->name('index');
+            Route::get('/list', 'list')->name('list');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/store', 'store')->name('store');
+            Route::get('/{category}/edit', 'edit')->name('edit');
+            Route::put('/{category}', 'update')->name('update');
+            Route::delete('/{category}', 'destroy')->name('destroy');
         });
+
 
     /**
      * Master – Expense Types

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
 use App\Http\Resources\CategoryResource;
 use App\Http\Requests\Category\Store;
 use App\Http\Requests\Category\Update;
@@ -14,6 +14,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use DomainException;
 
 class CategoryController extends Controller
 {
@@ -64,72 +66,68 @@ class CategoryController extends Controller
 
     public function store(Store $request)
     {
-        try {
-            // Log raw incoming data
-            logAction('Raw request data for New Category', 'info', $request->all());
+        // 1. Authorization
+        // Throws AuthorizationException on failure.
+        // Laravel's handler will catch it and use the message from your CategoryPolicy.
+        $this->authorize('create', Category::class);
 
-            // Validate
+        try {
+            // 2. Validation & Data Preparation
+            // The 'Store' FormRequest already handled validation. If it failed,
+            // it would have thrown a ValidationException which we catch below.
             $validatedData = $request->validated();
             $validatedData['created_by'] = $request->user()->id;
             logAction('Passing category data to DTO', 'info', $validatedData);
 
-            // DTO creation
+            // 3. DTO and Service Layer
             $dto = CategoryDTO::fromArray($validatedData);
-            logAction('DTO category Data created:', 'info', $dto->toArray());
-
-            // Service layer creation
             $category = $this->categoryService->createCategory($dto);
+            logAction('Category created successfully', 'info', ['id' => $category->id]);
 
+            // 4. Success Response
             return response()->json([
                 'success' => true,
                 'message' => 'Category created successfully.',
                 'callback' => route('category.list'),
                 'data' => new CategoryResource($category),
             ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-
-            // Validation-specific errors
+        } catch (ValidationException $e) {
+            // This catch block is technically redundant if using a FormRequest,
+            // as the FormRequest handles the redirect/JSON response automatically.
+            // However, it's kept here for clarity if you ever validate manually.
             logAction('Validation Error', 'error', $e->errors());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Validation Failed.',
                 'errors' => $e->errors(),
             ], 422);
-        } catch (\DomainException $e) {
-
-            // Domain / business logic errors thrown by service or DTO
+        } catch (DomainException $e) {
+            // This is a good exception to catch here, as it's a specific
+            // business logic failure that the controller should know how to report.
             logAction('Domain Error', 'error', ['error' => $e->getMessage()]);
-
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 400);
-        } catch (\Exception $e) {
-
-            // Catch-all for unexpected errors
-            logAction('Unexpected Error', 'error', [
-                'message' => $e->getMessage(),
-                'trace'   => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'An unexpected error occurred 5001.',
-            ], 500);
         }
+        // The generic `catch (\Exception $e)` and `catch (AuthorizationException $e)`
+        // have been removed. They will be handled by app/Exceptions/Handler.php.
     }
 
     public function edit($id)
     {
         $category = Category::findOrFail($id);
+        $this->authorize('update', $category);
         return view('admin.category._form', compact('category'));
     }
 
 
-    public function update(Update $request)
+    public function update(Update $request, Category $category)
     {
         try {
+
+            $this->authorize('update', $category);
+
             // Log raw incoming data
             logAction('Raw request data for update Category', 'info', $request->all());
 
@@ -143,7 +141,7 @@ class CategoryController extends Controller
             logAction('DTO updated category Data created:', 'info', $dto->toArray());
 
             // Service layer creation
-            $category = $this->categoryService->updateCategory($request->id, $dto);
+            $category = $this->categoryService->updateCategory($category->id, $dto);
 
             return response()->json([
                 'success' => true,
@@ -151,7 +149,7 @@ class CategoryController extends Controller
                 'callback' => route('category.list'),
                 'data' => new CategoryResource($category),
             ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
 
             // Validation-specific errors
             logAction('Validation Error', 'error', $e->errors());
@@ -161,7 +159,7 @@ class CategoryController extends Controller
                 'message' => 'Validation Failed.',
                 'errors' => $e->errors(),
             ], 422);
-        } catch (\DomainException $e) {
+        } catch (DomainException $e) {
 
             logAction('Domain Error', 'error', ['error' => $e->getMessage()]);
 
@@ -169,50 +167,36 @@ class CategoryController extends Controller
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 400);
-        } catch (\Exception $e) {
-
-            logAction('Unexpected Error', 'error', [
-                'message' => $e->getMessage(),
-                'trace'   => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'An unexpected error occurred 422.',
-            ], 422);
         }
     }
 
-    public function destroy($id)
+    public function destroy(Category $category)
     {
         try {
-            // Log raw incoming data
-            logAction('Raw request data for delete Category', 'info', [$id]);
-            $category = $this->categoryService->deleteCategory($id);
+            $this->authorize('delete', $category);
 
-            if($category){
+            logAction('Raw request data for delete Category', 'info', [
+                'id' => $category->id
+            ]);
+
+            $deleted = $this->categoryService->deleteCategory($category->id);
+
+            if ($deleted) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'category deleted sucessfully.',
+                    'message' => 'Category deleted successfully.',
                 ], 200);
-            }else{
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Some record exist with this category.',
-                ], 500);
             }
-        } catch (\Exception $e) {
-
-            logAction('Unexpected Error', 'error', [
-                'message' => $e->getMessage(),
-                'trace'   => $e->getTraceAsString(),
-            ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'An unexpected error occurred 500.',
-            ], 500);
+                'message' => 'Some records exist with this category.',
+            ], 409);
+        } catch (DomainException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
         }
-       
     }
 }

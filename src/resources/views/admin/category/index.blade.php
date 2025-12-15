@@ -43,6 +43,7 @@
                     <input type="hidden" id="listRoute" value="{{route('category.list')}}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="header-title mb-3">{{ __('category.all') }}</h4>
+                        @can('category.create')
                         <button
                             class="btn btn-primary btn-sm openModel"
                             data-size="lg"
@@ -51,6 +52,7 @@
                             data-url="{{ route('category.create') }}">
                             + {{__('global.new')}}
                         </button>
+                        @endcan
                     </div>
                     <x-alert />
 

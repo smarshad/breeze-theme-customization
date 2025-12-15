@@ -4,7 +4,7 @@
     $method = $isEdit ? 'PUT' : 'POST';
 @endphp
 
-<form id="categoryForm" action="{{ $action }}" method="{{$method}}" class="data-ajax-submit form-horizontal">
+<form id="categoryForm" action="{{ $action }}" method="POST" class="data-ajax-submit form-horizontal">
     @csrf
     @if($isEdit)
         @method('PUT')

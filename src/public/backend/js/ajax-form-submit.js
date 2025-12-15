@@ -221,10 +221,38 @@ $(document).on('click', '.openModel', function (e) {
             $modalBody.html(html);
             $footer.html(footerHtml);
         })
-        .fail(function () {
+        .fail(function (xhr) {
             $loader.hide();
-            $modalBody.html('<p class="text-danger">Failed to load content.</p>');
+
+            // Authorization error
+            if (xhr.status === 403) {
+                let message = 'You are not authorized to perform this action.';
+
+                // Try to read JSON message from policy
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+
+                $modalBody.html(`
+                    <div class="alert alert-danger text-center">
+                        ${message}
+                    </div>
+                `);
+
+                // Optional: auto-close modal
+                setTimeout(() => {
+                    $('#ajaxModal').modal('hide');
+                }, 5000);
+
+                return;
+            }
+
+            // Generic error
+            $modalBody.html(
+                '<div class="alert alert-danger">Failed to load content.</div>'
+            );
         });
+
 });
 
 $(document).on('click', '.js-submit-btn', function (e) {
