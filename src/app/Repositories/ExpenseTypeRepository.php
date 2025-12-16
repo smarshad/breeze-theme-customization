@@ -21,25 +21,25 @@ class ExpenseTypeRepository implements ExpenseTypeRepositoryInterface
         array $columns = ['*'],
         ?int $userId = null
     ): LengthAwarePaginator {
-    
+
         $query = $this->model->query();
-    
+
         if ($userId !== null) {
             $query->where('created_by', $userId);
         }
 
 
-            $sql = vsprintf(
-                str_replace('?', '%s', $query->toSql()),
-                collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()
-            );
+        // $sql = vsprintf(
+        //     str_replace('?', '%s', $query->toSql()),
+        //     collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()
+        // );
 
-            \Log::info($sql);
-            \Log::info($userId);
-    
+        // \Log::info($sql);
+        // \Log::info($userId);
+
         return $query->paginate($perPage, $columns);
     }
-    
+
 
     public function findById(int $id): ExpenseType
     {
@@ -70,22 +70,22 @@ class ExpenseTypeRepository implements ExpenseTypeRepositoryInterface
         // This assumes you have an 'expenses' relationship defined on the ExpenseType model
         // and a corresponding 'Expense' model.
         // The check should be fast and efficient.
-        
+
         // Placeholder for actual implementation:
         // return $this->model->whereHas('expenses', function ($query) use ($expenseTypeId) {
         //     $query->where('expense_type_id', $expenseTypeId);
         // })->exists();
-        
+
         // For demonstration, we'll assume a direct check on a hypothetical 'Expense' model
         // that has a foreign key 'expense_type_id'.
-        
+
         // To make this runnable, we'll use a simplified check that assumes the existence of a related model.
         // In a real application, you would need to import the Expense model.
-        
+
         // return \App\Models\Expense::where('expense_type_id', $expenseTypeId)->exists();
-        
+
         // Since we don't have the Expense model, we'll return false for now to allow the service to work
         // but the user should uncomment the real logic.
-        return false; 
+        return false;
     }
 }

@@ -96,7 +96,7 @@ $(function () {
                 class="btn btn-sm btn-primary"
                 href='${editUrl}'>
                 ${window.lang.edit}
-            </a>'
+            </a>
             <button class="btn btn-sm btn-danger btn-delete" data-action="${deleteUrl}" data-id="${id}">
                 Delete
             </button>

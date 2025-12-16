@@ -156,7 +156,7 @@ class RoleController extends Controller
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => true,
-                    'redirect' => route('roles.index'),
+                    'redirect' => route('roles.edit', $role->id),
                     'message' => 'Role updated successfully.',
                 ], 200);
             }

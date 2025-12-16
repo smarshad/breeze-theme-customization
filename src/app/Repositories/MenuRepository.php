@@ -35,11 +35,27 @@ class MenuRepository implements MenuRepositoryInterface
      */
     public function getPaginated(
         ?int $perPage = null,
-        array $columns = ['*']
+        array $columns = ['*'],
+        ?int $userId = null
     ): LengthAwarePaginator {
-        return $this->model
-            ->with(['parent', 'children', 'permission', 'creator'])
-            ->paginate($perPage ?? config('pagination.default'), $columns);
+        $query = $this->model
+            ->with(['parent', 'children', 'permission', 'creator']);
+        if ($userId !== null) {
+            $query->where('created_by', $userId);
+        }
+
+
+        $sql = vsprintf(
+            str_replace('?', '%s', $query->toSql()),
+            collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()
+        );
+
+        \Log::info($sql);
+        \Log::info("user id $userId");
+        return $query->paginate(
+            $perPage ?? config('pagination.default'),
+            $columns
+        );
     }
 
     /**

@@ -66,7 +66,7 @@ interface MenuRepositoryInterface
      */
     public function flattenMenu(array $data): array;
 
-    public function getPaginated(?int $perPage = null, array $column = ['*']): LengthAwarePaginator;
+    public function getPaginated(?int $perPage = null, array $column = ['*'], ?int $userId = null): LengthAwarePaginator;
 
     /**
      * Update an existing Record

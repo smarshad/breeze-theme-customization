@@ -18,9 +18,17 @@ class MenuService
     ) {}
 
 
-    public function getPaginated(?int $perPage = null): LengthAwarePaginator
+    public function getPaginated(User $user, ?int $perPage = null): LengthAwarePaginator
     {
-        return $this->menuRepository->getPaginated($perPage);
+        $userId = null; // Default: view all
+        // Check for 'view all' permission
+        if ($user->can('menu.view.all')) {
+            $userId = null; // No filtering needed
+        } elseif ($user->can('menu.view.own')) {
+            // If only 'view own' is granted, filter by the user's ID
+            $userId = $user->id;
+        }
+        return $this->menuRepository->getPaginated($perPage, ['*'], $userId);
     }
 
     public function createMenu(MenuDTO $menuDTO): Menu

@@ -2,18 +2,19 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule; // <-- Import the Rule class
 use Illuminate\Auth\Access\AuthorizationException;
 
-class MenuStoreRequest extends BaseFormRequest
+class MenuUpdateRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        if (! auth()->user()->can('create', Menu::class)) {
+        if (! auth()->user()->can('update', Menu::class)) {
             throw new AuthorizationException(
-                'You do not have permission to create menu.'
+                'You do not have permission to update menu.'
             );
         }
     
@@ -27,14 +28,23 @@ class MenuStoreRequest extends BaseFormRequest
      */
     public function rules(): array
     {
+        // Get the menu ID from the route parameter.
+        // This assumes your route is defined like /menus/{menu}
+        $menuId = $this->route('menu');
+
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                // Ensure the name is unique, but ignore the current menu being updated.
+                Rule::unique('menus')->ignore($menuId),
+            ],
             'route' => ['nullable', 'string', 'max:255'],
             'url' => ['nullable', 'string', 'max:255'],
             'icon' => ['nullable', 'string', 'max:100'],
             'parent_id' => ['nullable', 'exists:menus,id'],
             'order' => ['nullable', 'integer', 'min:0'],
-            // Assuming 'permissions' table exists
             'permission_id' => ['nullable', 'exists:permissions,id'],
             'is_active' => ['nullable', 'boolean'],
         ];
@@ -46,12 +56,12 @@ class MenuStoreRequest extends BaseFormRequest
             'name.required' => 'The menu name is required.',
             'name.string' => 'The menu name must be a valid string.',
             'name.max' => 'The menu name must not exceed 255 characters.',
+            'name.unique' => 'This menu name is already taken.', // <-- Added message for unique rule
 
             'route.string' => 'The route must be a valid string.',
             'route.max' => 'The route must not exceed 255 characters.',
 
-            // 'url.url' => 'Please enter a valid URL format (e.g., https://example.com).',
-            'url.string' => 'Please enter a valid URL format (e.g., https://example.com).',
+            'url.string' => 'Please enter a valid URL format (e.g., https://example.com ).',
             'url.max' => 'The URL must not exceed 255 characters.',
 
             'icon.string' => 'The icon must be a valid string.',
