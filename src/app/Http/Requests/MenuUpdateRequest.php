@@ -12,7 +12,9 @@ class MenuUpdateRequest extends BaseFormRequest
      */
     public function authorize(): bool
     {
-        if (! auth()->user()->can('update', Menu::class)) {
+        $menu = $this->route('menu');
+
+        if (! auth()->user()->can('update', $menu)) {
             throw new AuthorizationException(
                 'You do not have permission to update menu.'
             );

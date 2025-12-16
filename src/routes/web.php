@@ -115,9 +115,9 @@ Route::middleware(['auth', 'locked'])->group(function () {
             Route::get('/getAll', 'getAll')->name('list');             // paymentmethod.list
             Route::get('/create', 'create')->name('create');           // paymentmethod.create
             Route::post('/store', 'store')->name('store');             // paymentmethod.store
-            Route::get('/{id}/edit', 'edit')->name('edit');            // paymentmethod.edit
-            Route::put('/{id}', 'update')->name('update');             // paymentmethod.update
-            Route::delete('/{id}', 'destroy')->name('destroy');        // paymentmethod.destroy
+            Route::get('/{paymentMethod}/edit', 'edit')->name('edit');            // paymentmethod.edit
+            Route::put('/{paymentMethod}', 'update')->name('update');             // paymentmethod.update
+            Route::delete('/{paymentMethod}', 'destroy')->name('destroy');        // paymentmethod.destroy
         });
 
     /**

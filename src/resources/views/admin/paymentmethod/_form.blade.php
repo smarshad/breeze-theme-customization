@@ -4,7 +4,7 @@ $action = $isEdit ? route('paymentmethod.update', $paymentmethod) : route('payme
 $method = $isEdit ? 'PUT' : 'POST';
 @endphp
 
-<form id="paymentmethodForm" action="{{ $action }}" method="{{$method}}" class="data-ajax-submit form-horizontal">
+<form id="paymentmethodForm" action="{{ $action }}" method="POST" class="data-ajax-submit form-horizontal">
     @csrf
     @if($isEdit)
     @method('PUT')

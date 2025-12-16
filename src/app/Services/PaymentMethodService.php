@@ -9,6 +9,7 @@ use DomainException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class PaymentMethodService
 {
@@ -21,10 +22,19 @@ class PaymentMethodService
     /**
      * Retrieves paginatedpayment methods.
      */
-    public function getPaginated(?int $perPage = null): LengthAwarePaginator
+    public function getPaginated(User $user, ?int $perPage = null): LengthAwarePaginator
     {
+
+        $userId = null; // Default: view all
+        // Check for 'view all' permission
+        if ($user->can('paymentmethod.view.all')) {
+            $userId = null; // No filtering needed
+        } elseif ($user->can('paymentmethod.view.own')) {
+            // If only 'view own' is granted, filter by the user's ID
+            $userId = $user->id;
+        }
         // Caching is typically not used for paginated results unless the query is very expensive and static.
-        return $this->paymentMethodRepository->getPaginated($perPage);
+        return $this->paymentMethodRepository->getPaginated($perPage, ['*'], $userId);
     }
 
     /**

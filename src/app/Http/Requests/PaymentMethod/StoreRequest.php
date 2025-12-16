@@ -5,6 +5,7 @@ namespace App\Http\Requests\PaymentMethod;
 use App\Http\Requests\BaseFormRequest;
 use Illuminate\Validation\Validator;
 use App\Models\PaymentMethod;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class StoreRequest extends BaseFormRequest
 {
@@ -13,6 +14,11 @@ class StoreRequest extends BaseFormRequest
      */
     public function authorize(): bool
     {
+        if (! auth()->user()->can('create', PaymentMethod::class)) {
+            throw new AuthorizationException(
+                'You do not have permission to create PaymentMethod.'
+            );
+        }
         return true;
     }
 

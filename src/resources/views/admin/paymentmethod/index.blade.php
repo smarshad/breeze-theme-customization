@@ -43,6 +43,7 @@
                     <input type="hidden" id="listRoute" value="{{route('paymentmethod.list')}}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="header-title mb-3">{{ __('paymentmethod.all') }}</h4>
+                        @can('paymentmethod.create')
                         <button
                             class="btn btn-primary btn-sm openModel"
                             data-size="lg"
@@ -51,6 +52,7 @@
                             data-url="{{ route('paymentmethod.create') }}">
                             + {{__('global.new')}}
                         </button>
+                        @endcan
                     </div>
                     <x-alert />
 

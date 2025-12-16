@@ -3,6 +3,7 @@
 namespace App\Http\Requests\PaymentMethod;
 
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\Rule;
 
 
@@ -13,6 +14,13 @@ class UpdateRequest extends BaseFormRequest
      */
     public function authorize(): bool
     {
+        $paymentMethod = $this->route('paymentMethod');
+
+        if (! auth()->user()->can('update', $paymentMethod)) {
+            throw new AuthorizationException(
+                'You do not have permission to update PaymentMethod.'
+            );
+        }
         return true;
     }
 
