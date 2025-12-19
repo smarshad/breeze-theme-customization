@@ -2,11 +2,10 @@ let table;
 
 $(function () {
     const url = $('#listRoute').val();
-    console.log(url);
     initList(url);
 
     function initList(url) {
-        $.fn.dataTable.ext.errMode = 'none';
+
 
         if ($.fn.DataTable.isDataTable('#datatable')) {
             table.ajax.url(url).load();
@@ -24,9 +23,7 @@ $(function () {
             ajax: {
                 url: url,
                 type: "GET",
-                beforeSend: function () {
-                    showTableLoader(); // ✅ show loader
-                },
+
                 // 🔥 FIX: The 'data' function MUST be inside the 'ajax' object
                 data: function (d) {
                     // Calculate the page number: (offset / limit) + 1
@@ -47,9 +44,6 @@ $(function () {
                 dataSrc: function (json) {
                     // Your backend is now sending the correct format, 
                     // so this function is correct for extracting the data array.
-
-                    hideTableLoader(); // ✅ hide on success
-
                     return json.data || [];
                 },
                 error: function (xhr) {
@@ -82,19 +76,16 @@ $(function () {
 
             columns: [
                 { data: "id" },
-                { data: 'name' },
-                { data: "route" },
-                { data: "url" },
-                { data: "icon" },
-                { data: "parent_name" },
-                { data: "children.length" },
-                { data: "order" },
-                { data: "is_active" },
+                { data: "name" },
+                { data: "module" },
+                { data: "description" },
+                { data: "guard_name" },
                 { data: "created_at" },
-                { data: "creator.name" },
                 {
                     render: function (data, type, row) {
-                        return renderActionButtons(row)
+                        // 'row' now contains the full object for the current row,
+                        // including the 'can' permissions from the backend.
+                        return renderActionButtons(row);
                     }
                 }
             ],
@@ -105,39 +96,52 @@ $(function () {
         });
 
         // 🔥 Add loader inside table rows
-        // table.on('processing.dt', function (e, settings, processing) {
-        //     if (processing) {
-        //         showTableLoader();
-        //     }
-        // });
+        table.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                showTableLoader();
+            }
+        });
     }
 
     function renderActionButtons(rowData) {
+        // Start with an empty string for the buttons
         let buttonsHtml = '';
+
         // --- PERMISSION-BASED RENDERING ---
 
-        // 1. Check if the user can UPDATE this category
+        // 1. Check if the user can UPDATE this permission
         if (rowData.can && rowData.can.update) {
             const editUrl = window.routes.edit.replace(':id', rowData.id);
             const titleText = `${window.lang.edit} ${window.lang.title}`;
+
             buttonsHtml += `
-           <a
+            <a
                 class="btn btn-sm btn-primary"
                 href='${editUrl}'>
                 ${window.lang.edit}
-            </a>`;
+            </a>
+        `;
         }
+
         // 2. Check if the user can DELETE this category
         if (rowData.can && rowData.can.delete) {
             const deleteUrl = window.routes.delete.replace(':id', rowData.id);
 
             buttonsHtml += `
             <button class="btn btn-sm btn-danger btn-delete" data-action="${deleteUrl}" data-id="${rowData.id}">
-                Delete
-            </button>`;
+            ${window.lang.delete}
+            </button>
+        `;
         }
+
         // Return the generated HTML (will be empty if user has no permissions)
         return buttonsHtml.trim();
+    }
+
+    function renderStatusBadge(isActive) {
+        return isActive
+            ? '<span class="badge bg-success">Active</span>'
+            : '<span class="badge bg-danger">Inactive</span>';
     }
 
     function showTableLoader() {
@@ -152,5 +156,6 @@ $(function () {
             </tr>
         `);
     }
+
 
 });

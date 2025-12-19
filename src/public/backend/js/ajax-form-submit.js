@@ -269,3 +269,22 @@ $(document).on('click', '.js-submit-btn', function (e) {
 
     $form.trigger('submit');  // this will hit your existing .data-ajax-submit handler
 });
+
+function showAlert(message) {
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            ${message}
+        </div>
+    `;
+    $('#datatable_wrapper').prepend(alertHtml);
+    hideTableLoader()
+    setTimeout(() => {
+        $('.alert').modal('hide');
+    }, 5000);
+
+}
+
+function hideTableLoader() {
+    // DataTables will repopulate rows automatically, so nothing needed here
+    $('#datatable .table-loading-row').remove();
+}

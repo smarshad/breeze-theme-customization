@@ -4,6 +4,8 @@ namespace App\Services;
 
 use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Eloquent\Collection;
+use App\Interfaces\PermissionRepositoryInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * PermissionService handles the business logic for Permission CRUD operations.
@@ -11,6 +13,10 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class PermissionService
 {
+
+    public function __construct(
+        protected PermissionRepositoryInterface $permission_repository_interface
+    ) {}
     /**
      * Retrieve all Permissions.
      *
@@ -20,6 +26,11 @@ class PermissionService
     {
         // Simple retrieval, future mein pagination ya filtering yahan add ho sakta hai.
         return Permission::all();
+    }
+
+    public function getPaginated(?int $perPage = null): LengthAwarePaginator
+    {
+        return $this->permission_repository_interface->getPaginated($perPage, ['*']);
     }
 
     /**

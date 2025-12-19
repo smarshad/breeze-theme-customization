@@ -45,13 +45,13 @@ class MenuRepository implements MenuRepositoryInterface
         }
 
 
-        $sql = vsprintf(
-            str_replace('?', '%s', $query->toSql()),
-            collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()
-        );
+        // $sql = vsprintf(
+        //     str_replace('?', '%s', $query->toSql()),
+        //     collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()
+        // );
 
-        \Log::info($sql);
-        \Log::info("user id $userId");
+        // \Log::info($sql);
+        // \Log::info("user id $userId");
         return $query->paginate(
             $perPage ?? config('pagination.default'),
             $columns

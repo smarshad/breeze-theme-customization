@@ -53,13 +53,13 @@ Route::middleware(['auth', 'locked'])->group(function () {
     /**
      * Core RBAC Resources
      */
-    Route::resources([
-        'permissions' => PermissionController::class,
-        'roles'       => RoleController::class,
-        'users'       => UserController::class,
-    ]);
-
+    Route::resource('roles', RoleController::class);
+    Route::resource('users', UserController::class);
+    
+    Route::resource('permissions', PermissionController::class)->except(['show']);
+    Route::get('permissions/list', [PermissionController::class, 'getAll'])->name('permissions.list');
     /**
+     * 
      * User Permissions
      */
     Route::prefix('users/{user}')
