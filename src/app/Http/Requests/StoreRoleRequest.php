@@ -21,6 +21,8 @@ class StoreRoleRequest extends BaseFormRequest
      */
     public function rules(): array
     {
+        logAction('RoleStoreRequest', 'info', []);
+
         return [
             'name' => [
                 'required',

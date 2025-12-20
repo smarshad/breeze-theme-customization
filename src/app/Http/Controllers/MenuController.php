@@ -173,7 +173,7 @@ class MenuController extends BaseController
         }
     }
 
-    private function createDTOFromRequest(Request $request): MenuDTO
+    private function createDTOFromRequest(MenuStoreRequest $request): MenuDTO
     {
         $validatedData = $request->validated();
         // Assuming the user is authenticated and has an ID

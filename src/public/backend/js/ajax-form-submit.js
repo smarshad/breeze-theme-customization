@@ -106,6 +106,7 @@ $(document).ready(function () {
 });
 
 function handleAjaxFormSubmit(action, method, formData) {
+    $('.alert').hide();
     $.ajax({
         url: action,
         method: method,

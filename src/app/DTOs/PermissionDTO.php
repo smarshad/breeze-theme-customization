@@ -2,7 +2,7 @@
 
 namespace App\DTOs;
 
-class PaymentMethodDO
+class PermissionDTO
 {
     public function __construct(
         public string $name,

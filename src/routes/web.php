@@ -53,7 +53,8 @@ Route::middleware(['auth', 'locked'])->group(function () {
     /**
      * Core RBAC Resources
      */
-    Route::resource('roles', RoleController::class);
+    Route::resource('roles', RoleController::class)->except(['show']);
+    Route::get('roles/list', [RoleController::class, 'getAll'])->name('roles.list');
     Route::resource('users', UserController::class);
     
     Route::resource('permissions', PermissionController::class)->except(['show']);

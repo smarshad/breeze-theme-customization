@@ -2,11 +2,16 @@
 
 @push('styles')
 <link href="{{asset('backend/libs/sweetalert2/sweetalert2.min.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{asset('backend/libs/datatables/dataTables.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{asset('backend/libs/datatables/buttons.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{asset('backend/libs/datatables/responsive.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
 @endpush
 
 @push('scripts')
 <script src="{{asset('backend/libs/sweetalert2/sweetalert2.min.js')}}"></script>
 <script src="{{asset('backend/js/pages/sweet-alerts.init.js')}}"></script>
+<script src="{{asset('backend/libs/datatables/jquery.dataTables.min.js')}}"></script>
+<script src="{{asset('backend/libs/datatables/dataTables.bootstrap4.min.js')}}"></script>
 @endpush
 
 @section('content')
@@ -34,6 +39,8 @@
             <div class="col-md-12">
                 <div class="card-box">
                     <div class="d-flex justify-content-between align-items-center mb-3">
+                        <input type="hidden" id="listRoute" value="{{route('roles.list')}}">
+
                         <h4 class="header-title mb-3">{{ __('roles.all') }}</h4>
                         <a href="{{ route('roles.create') }}"
                             class="btn btn-primary btn-sm">
@@ -43,41 +50,20 @@
                     <x-alert />
 
                     <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead class="thead-light">
-                                <thead>
-                                    <tr>
-                                        <th>Sr No</th>
-                                        <th>Name</th>
-                                        <th>Permissions Count</th>
-                                        <th>Description</th>
-                                        <th>Guard Name</th>
-                                        <th>Created At</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                            <tbody>
-                                @if($roles->isNotEmpty())
-                                @foreach($roles as $role)
+                        <table id="datatable" class="table table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                            <thead>
                                 <tr>
-                                    <td>{{$loop->iteration}}</td>
-                                    <td>{{$role->name}}</td>
-                                    <td>{{$role->permissions->pluck('name')->implode(', ')}}</td>
-                                    <td>{{$role->description}}</td>
-                                    <td>{{$role->guard_name}}</td>
-                                    <td>{{\Carbon\Carbon::parse($role->created_at)->format('d M, Y')}}</td>
-                                    <td>
-                                        <div class="button-list d-flex align-items-center gap-2">
-                                            <a href="{{ route('roles.edit', $role) }}" class="btn btn-sm btn-info">{{ __('global.update') }}</a>
-                                            <a href="javascript:void(0)" data-action="{{ route('roles.destroy', $role) }}" class="btn btn-sm btn-danger btn-delete" data-id="{{$role->id}}">{{ __('global.delete') }}</a>
-                                        </div>
-                                    </td>
+                                    <th>Sr No</th>
+                                    <th>Name</th>
+                                    <th>Permissions</th>
+                                    <th>Description</th>
+                                    <th>Guard Name</th>
+                                    <th>Created At</th>
+                                    <th>Action</th>
                                 </tr>
-                                @endforeach
-                                @endif
+                            <tbody>
                             </tbody>
                         </table>
-                        {{$roles->links()}}
                     </div>
                 </div>
             </div>
@@ -86,5 +72,20 @@
 </div>
 @endsection
 @push('scripts')
+<script>
+    window.routes = {
+        edit: "{{ route('roles.edit', ':id') }}",
+        delete: "{{ route('roles.destroy', ':id') }}",
+    };
+
+    window.lang = {
+        new: @json(__('global.new')),
+        delete: @json(__('global.delete')),
+        edit: @json(__('global.update')),
+        close: @json(__('global.close')),
+        title: @json(__('roles.title')),
+    };
+</script>
+<script src="{{ asset('backend/js/manage-role.js') }}"></script>
 <script src="{{ asset('backend/js/ajax-form-submit.js') }}"></script>
 @endpush

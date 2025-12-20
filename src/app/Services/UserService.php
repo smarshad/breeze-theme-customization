@@ -5,7 +5,8 @@ namespace App\Services;
 use App\DTOs\UserDTO;
 use App\Models\Permission;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
+
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

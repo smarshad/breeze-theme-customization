@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 
 class SuperAdminSeeder extends Seeder

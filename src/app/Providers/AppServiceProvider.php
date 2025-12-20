@@ -9,6 +9,7 @@ use App\Interfaces\PaymentMethodRepositoryInterface;
 use App\Interfaces\ExpenseRepositoryInterface;
 use App\Interfaces\MenuRepositoryInterface;
 use App\Interfaces\PermissionRepositoryInterface;
+use App\Interfaces\RoleRepositoryInterface;
 use App\Models\User;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ExpenseTypeRepository;
@@ -16,6 +17,7 @@ use App\Repositories\PaymentMethodRepository;
 use App\Repositories\ExpenseRepository;
 use App\Repositories\MenuRepository;
 use App\Repositories\PermissionRepository;
+use App\Repositories\RoleRepository;
 use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
@@ -51,6 +53,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             PermissionRepositoryInterface::class,
             PermissionRepository::class
+        );
+
+
+        $this->app->bind(
+            RoleRepositoryInterface::class,
+            RoleRepository::class
         );
     }
 

@@ -3,20 +3,85 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
+
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Http\Resources\RoleResource;
+use App\Services\RoleService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
+use App\DTOs\RoleDTO;
+use DomainException;
 
-class RoleController extends Controller
+class RoleController extends BaseController
 {
+
+    public function __construct(
+        protected RoleService $roleService
+    ) {}
     /**
      * Display a listing of the resource.
      */
+
+
     public function index()
     {
-        $roles = Role::withCount('permissions')->orderBy('id', 'desc')->paginate(10);
-        return view('admin.roles.index', compact('roles'));
+        return view('admin.roles.index');
+    }
+
+    public function getAll(Request $request): JsonResponse
+    {
+        // 1. Authorize the action using the RolePolicy
+        // This will throw an AuthorizationException (403 Forbidden) if the user is not authorized
+        // to view any categories (i.e., viewAny returns false).
+
+        $user = Auth::user();
+
+        // Authorization happens AFTER logging
+        $this->authorize('viewAny', Role::class);
+
+        // Safety check: If the route is not protected by 'auth' middleware, $user could be null.
+        // We ensure the user is an instance of the User model before passing it to the service.
+        if (!$user instanceof User) {
+            // If the user is not authenticated, we throw an exception.
+            // In a real Laravel app, the 'auth' middleware should handle this,
+            // but this check adds robustness.
+            abort(401, 'Unauthenticated.');
+        }
+
+        try {
+            $perPage            = $request->get('per_page', NULL);
+            $data               = $this->roleService->getPaginated($perPage);
+            $draw               = $request->get('draw', 1);
+            $response           = RoleResource::collection($data)->response()->getData(true);
+            $response['draw']   = (int) $draw;
+            $response['recordsTotal'] = $response['meta']['total'];
+            $response['recordsFiltered'] = $response['meta']['total'];
+            return response()->json($response);
+        } catch (ValidationException $e) {
+            // This catch block is technically redundant if using a FormRequest,
+            // as the FormRequest handles the redirect/JSON response automatically.
+            // However, it's kept here for clarity if you ever validate manually.
+            logAction('Validation Error', 'error', $e->errors());
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation Failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (DomainException $e) {
+            // This is a good exception to catch here, as it's a specific
+            // business logic failure that the controller should know how to report.
+            logAction('Domain Error', 'error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
     }
 
     /**
@@ -24,6 +89,7 @@ class RoleController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Role::class);
         $permissionsGrouped = Permission::getGroupedByModule();
         return view('admin.roles.create', compact('permissionsGrouped'));
     }
@@ -33,75 +99,36 @@ class RoleController extends Controller
      */
     public function store(StoreRoleRequest $request)
     {
-        $validated = $request->validated();
+        $this->authorize('create', Role::class);
 
-        try {
+        $dto = $this->createRoleDTOFromRequest($request);
 
-            $role = Role::create([
-                'name' => $validated['name'],
-                'description' => $validated['description'],
-            ]);
+        $this->roleService->createRole($dto);
 
-            logAction('New Role  Created', 'info', [
-                'role_id'   => $role->id,
-                'role_name' => $role->name,
-            ]);
-
-            if ($request->has('permissions')) {
-                $permissions = Permission::whereIn('id', $validated['permissions'])->get();
-                logAction('Assign Permission To Role', 'info', ['permission_names' => $permissions->pluck('name')->toArray()]);
-                $role->syncPermissions($permissions);
-            }
-
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'redirect' => route('roles.index'),
-                    'message' => 'Role created successfully.',
-                ], 201);
-            }
-
-            return redirect()->route('roles.index')->with('success', 'Role created successfully.');
-        } catch (\Exception $e) {
-            logAction('Eror While Creating New Role', 'error', [
-                'role_name' => $role->name,
-            ]);
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error creating role: ' . $e->getMessage(),
-                ], 500); // ✅ 500 for server errors
-            }
-
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Error creating role: ' . $e->getMessage());
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Role created successfully',
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        // 
-    }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id)
+    public function edit(Role $role)
     {
-        $role = Role::find($id);
-        if (!$role) {
-            logAction('Role not found for editing', 'warning', [
-                'role_id' => $id,
-            ]);
+        $this->authorize('update', $role);
 
-            return redirect()
-                ->route('roles.index')
-                ->with('error', __('roles.not_found'));
-        }
+        // $role = Role::find($id);
+        // if (!$role) {
+        //     logAction('Role not found for editing', 'warning', [
+        //         'role_id' => $id,
+        //     ]);
+
+        //     return redirect()
+        //         ->route('roles.index')
+        //         ->with('error', __('roles.not_found'));
+        // }
 
         $permissionsGrouped = Permission::getGroupedByModule();
         $rolePermissions = $role->permissions->pluck('id')->toArray();
@@ -113,7 +140,7 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role)
     {
-        
+
         $validated = $request->validated();
         try {
 
@@ -253,10 +280,19 @@ class RoleController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Role deleted successfully',
-            ],200);
+            ], 200);
         }
 
         return redirect()->route('roles.index')
             ->with('status', 'Role deleted successfully');
+    }
+
+    private function createRoleDTOFromRequest($request): RoleDTO
+    {
+        $validated = $request->validated();
+
+        logAction('Passing Role Request to DTO', 'info', $validated);
+
+        return RoleDTO::fromArray($validated);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\DTOs\UserDTO;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\JsonResponse;
