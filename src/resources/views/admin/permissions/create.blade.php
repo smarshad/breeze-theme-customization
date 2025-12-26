@@ -31,7 +31,7 @@
                     </div>
                     <x-alert />
 
-                    <form class="form-horizontal" method="POST" action="{{route('permissions.store')}}">
+                    <form class="form-horizontal data-ajax-submit" method="POST" action="{{route('permissions.store')}}">
                         @csrf
                         <div class="form-group row">
                             <label for="name" class="col-3 col-form-label">Name</label>
@@ -61,3 +61,6 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+<script src="{{ asset('backend/js/ajax-form-submit.js') }}"></script>
+@endpush

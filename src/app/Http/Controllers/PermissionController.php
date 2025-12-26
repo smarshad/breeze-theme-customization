@@ -13,8 +13,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Permission;
 use App\Models\User;
-
+use App\DTOs\PermissionDTO;
 use DomainException;
+
 class PermissionController extends BaseController
 {
 
@@ -86,22 +87,17 @@ class PermissionController extends BaseController
 
     public function store(StorePermissionRequest $request)
     {
-        $this->authorize('create', Permission::class);
-
-        $permission = Permission::create([
-            'name'        => $request->name,
-            'description' => $request->description,
-            'module' => $request->module,
-        ]);
-
-        logAction('Permission Created', 'info', [
-            'permission_id'   => $permission->id,
-            'permission_name' => $permission->name,
-            'permission_module' => $permission->module,
-        ]);
-
-        return redirect()->route('permissions.create')
-            ->with('status', 'Permission Added Successfully');
+        try {
+            $this->authorize('create', Permission::class);
+            $dto = PermissionDTO::fromArray($request->validated());
+            $data = $this->permissionService->createPermission($dto->toArray());
+            logAction('Permission Created', 'info', $dto->toArray());
+            return $this->successResponse(new PermissionResource($data), 'Permission Added Successfully', 201, ['redirect' => route('permissions.index')]);
+        } catch (ValidationException $e) {
+            return $this->handleValidationException($e);
+        } catch (DomainException $e) {
+            return $this->handleDomainException($e);
+        }
     }
 
     public function edit(Permission $permission)
@@ -109,11 +105,11 @@ class PermissionController extends BaseController
         $this->authorize('update', $permission);
 
         if (!$permission) {
-    
+
             logAction('Permission not found for editing', 'warning', [
                 'permission_id' => $permission->id,
             ]);
-    
+
             return redirect()
                 ->route('permissions.index')
                 ->with('error', __('permissions.not_found'));
@@ -122,75 +118,33 @@ class PermissionController extends BaseController
         return view('admin.permissions.edit', compact('permission'));
     }
 
+
+
+
     public function update(UpdatePermissionRequest $request, Permission $permission)
     {
         $this->authorize('update', $permission);
 
-        $permission = Permission::find($permission->id);
+        $permission = $this->permissionService->updatePermission(
+            $permission,
+            $request->validated()
+        );
 
-        if (!$permission) {
-    
-            logAction('Permission not found for update', 'error', [
-                'permission_id' => $permission->id,
-            ]);
-    
-            return response()->json(['message' => 'Updated successfully']);
-        }
-        // Save old values
-        $old = $permission->only(['name', 'description', 'module']);
-
-        // Update
-        $permission->update($request->only(['name', 'description', 'module']));
-
-        // Log
-        logAction('Permission Updated', 'info', [
-            'permission_id'      => $permission->id,
-            'old_name'           => $old['name'],
-            'new_name'           => $permission->name,
-            'old_description'    => $old['description'],
-            'new_description'    => $permission->description,
-        ]);
-
-        return response()->json(['message' => 'Updated successfully']);
+        return $this->successResponse(
+            new PermissionResource($permission),
+            'Permission Updated Successfully'
+        );
     }
 
     public function destroy(Permission $permission)
     {
         $this->authorize('delete', $permission);
 
-        $permission = Permission::find($permission->id);
+        $this->permissionService->deletePermission($permission);
 
-        if (!$permission) {
-    
-            logAction('Permission not found for delete', 'error', [
-                'permission_id' => $permission->id,
-            ]);
-    
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Permission not found',
-                ]);
-            }
-        }
-
-        $oldName = $permission->name;
-
-        logAction('Permission Deleted', 'warning', [
-            'permission_id' => $permission->id,
-            'old_name'      => $oldName,
+        return response()->json([
+            'success' => true,
+            'message' => 'Permission deleted successfully',
         ]);
-
-        $permission->delete();
-
-        if (request()->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Permission deleted successfully',
-            ]);
-        }
-
-        return redirect()->route('permissions.index')
-            ->with('status', 'Permission deleted successfully');
     }
 }

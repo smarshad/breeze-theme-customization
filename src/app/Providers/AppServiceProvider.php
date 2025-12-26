@@ -10,7 +10,9 @@ use App\Interfaces\ExpenseRepositoryInterface;
 use App\Interfaces\MenuRepositoryInterface;
 use App\Interfaces\PermissionRepositoryInterface;
 use App\Interfaces\RoleRepositoryInterface;
+use App\Models\Permission;
 use App\Models\User;
+use App\Observers\PermissionObserver;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ExpenseTypeRepository;
 use App\Repositories\PaymentMethodRepository;
@@ -72,5 +74,6 @@ class AppServiceProvider extends ServiceProvider
                 return true; // Grant all access
             }
         });
+        Permission::observe(PermissionObserver::class);
     }
 }

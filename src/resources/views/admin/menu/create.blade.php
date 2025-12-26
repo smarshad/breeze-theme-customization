@@ -136,5 +136,4 @@ $parent_id = $menu && $menu->exists ? $menu->parent_id : NULL
 @endsection
 @push('scripts')
 <script src="{{ asset('backend/js/ajax-form-submit.js') }}"></script>
-<!-- <script src="{{ asset('backend/js/menu.js') }}"></script> -->
 @endpush
