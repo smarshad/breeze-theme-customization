@@ -55,7 +55,8 @@ Route::middleware(['auth', 'locked'])->group(function () {
      */
     Route::resource('roles', RoleController::class)->except(['show']);
     Route::get('roles/list', [RoleController::class, 'getAll'])->name('roles.list');
-    Route::resource('users', UserController::class);
+    Route::get('users/list', [UserController::class, 'list'])->name('users.list');
+    Route::resource('users', UserController::class)->except(['show']);
     
     Route::resource('permissions', PermissionController::class)->except(['show']);
     Route::get('permissions/list', [PermissionController::class, 'getAll'])->name('permissions.list');

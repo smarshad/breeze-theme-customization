@@ -3,151 +3,103 @@
 namespace App\Services;
 
 use App\DTOs\UserDTO;
-use App\Models\Permission;
+use App\Interfaces\UserRepositoryInterface;
 use App\Models\User;
-use App\Models\Role;
-
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Models\Permission;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UserService
 {
-    /**
-     * Get all users
-     */
-    public function getUsers(array $filters = []): Paginator
+    public function __construct(
+        private UserRepositoryInterface $users
+    ) {}
+
+    public function paginateForUser(User $authUser, int $perPage): LengthAwarePaginator
     {
-        $query = User::query()->with('role');
+        $createdBy = null;
 
-        if (isset($filters['role_id'])) {
-            $query->where('role_id', $filters['role_id']);
+        // If user can ONLY view own, restrict the query
+        if (
+            $authUser->can('users.view.own') &&
+            ! $authUser->can('users.view.all')
+        ) {
+            $createdBy = $authUser->id;
         }
 
-        if (isset($filters['is_active'])) {
-            $query->where('is_active', $filters['is_active']);
-        }
-
-        if (isset($filters['search'])) {
-            $query->where('name', 'like', '%' . $filters['search'] . '%')
-                ->orWhere('email', 'like', '%' . $filters['search'] . '%');
-        }
-
-        return $query->orderBy('name')->paginate($filters['per_page'] ?? 15);
+        return $this->users->paginate($perPage, $createdBy);
     }
 
-    /**
-     * Create a new user
-     */
     public function create(UserDTO $dto): User
     {
+        return DB::transaction(function () use ($dto) {
+            // Validate roles and permissions exist
+            $dto->validateRoles();
+            $dto->validatePermissions();
 
-        $data = $dto->toArray();
-        if (!isset($data['created_by']) && Auth::check()) {
-            $data['created_by'] = Auth::id();
-        }
+            // Create user
+            $user = User::create($dto->toArray());
 
-        // Create the user
-        $user = User::create($data);
+            // Sync roles using role names
+            if ($roles = $dto->getRoles()) {
+                Log::info('Syncing roles to user', [
+                    'user_id' => $user->id,
+                    'roles' => $roles
+                ]);
+                $user->syncRoles($roles);
+            }
 
-        // Assign roles using Spatie
-        $this->assignRolesToUser($user, $dto->getRoles());
+            // Sync permissions using permission names
+            if ($permissions = $dto->getPermissions()) {
+                Log::info('Syncing permissions to user', [
+                    'user_id' => $user->id,
+                    'permissions' => $permissions
+                ]);
+                $user->syncPermissions($permissions);
+            }
 
-        // Assign direct permissions
-        if (!empty($dto->getPermissions())) {
-            $user->givePermissionTo($dto->getPermissions());
-        }
-
-        return $user->load(['roles', 'permissions', 'creator']);
+            return $user->load(['roles', 'permissions', 'creator']);
+        });
     }
 
     public function update(User $user, UserDTO $dto): User
     {
-        // Update user attributes
-        $user->update($dto->toArray());
+        return DB::transaction(function () use ($user, $dto) {
 
-        // Sync roles if provided in DTO
-        if ($dto->getRoles()) {
-            $this->syncRolesForUser($user, $dto->getRoles());
-        }
+            $original = $user->only(['name', 'email', 'mobile_no']);
 
-        // Sync permissions if provided
-        if ($dto->getPermissions() !== NULL) {
-            $user->syncPermissions($dto->getPermissions());
-        }
+            $user->update($dto->toArray());
 
-        return $user->load('roles');
+            if ($dto->getRoles() !== null) {
+                $user->syncRoles($dto->getRoles());
+            }
+
+            if ($dto->getPermissions() !== null) {
+                $user->syncPermissions($dto->getPermissions());
+            }
+
+            logAction('User update details', 'info', [
+                'user_id' => $user->id,
+                'before'  => $original,
+                'after'   => $user->only(['name', 'email', 'mobile_no']),
+            ]);
+
+            return $user->load(['roles', 'permissions']);
+        });
     }
 
-    /**
-     * Delete a user (soft delete)
-     */
-    public function deleteById(int $id): bool
-    {
-        $user = User::find($id);
 
-        if (! $user) {
-            throw new ModelNotFoundException("User not found.");
-        }
-
-        return $this->delete($user);
-    }
-
-    protected function assignRolesToUser(User $user, array $roles): void
-    {
-        if (empty($roles)) {
-            return;
-        }
-
-        // Check if roles are IDs or names
-        $firstRole = $roles[0] ?? NULL;
-
-        if (is_numeric($firstRole)) {
-            // Roles are IDs, get role models
-            $roleModels = Role::whereIn('id', $roles)->get();
-            $user->assignRole($roleModels);
-        } else {
-            // Roles are names
-            $user->assignRole($roles);
-        }
-    }
-
-    protected function syncRolesForUser(User $user, array $roles): void
-    {
-        if (empty($roles)) {
-            $user->roles()->detach();
-            return;
-        }
-
-        // Check if roles are IDs or names
-        $firstRole = $roles[0] ?? NULL;
-
-        if (is_numeric($firstRole)) {
-            // Treat as IDs (string or int)
-            $roleModels = Role::whereIn('id', $roles)->get();
-        } else {
-            // Treat as names
-            $roleModels = Role::whereIn('name', $roles)->get();
-        }
-
-        $user->syncRoles($roleModels);
-    }
-
-    /**
-     * Delete a user (soft delete)
-     */
     public function delete(User $user): bool
     {
         if ($user->hasRole('Super Admin')) {
-            // you can throw an exception or just return false
-            throw new \RuntimeException('Super Admin user cannot be deleted.');
+            throw new \RuntimeException('Super Admin cannot be deleted');
         }
-        $dto = UserDTO::fromModel($user);
-        // Manually clear roles/permissions before soft delete
+
         $user->syncRoles([]);
-        $user->syncPermissions([]); // optional if you use direct perms
-        logAction('user deleted:', 'info', ['user' => $dto->toArray(), 'role' => $user->hasRole('Super Admin')]);
-        return $user->delete();
+        $user->syncPermissions([]);
+
+        return $this->users->delete($user);
     }
 
     public function assignPermissions(User $user, array $selectedPermissions): User

@@ -2,11 +2,16 @@
 
 @push('styles')
 <link href="{{asset('backend/libs/sweetalert2/sweetalert2.min.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{asset('backend/libs/datatables/dataTables.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{asset('backend/libs/datatables/buttons.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
+<link href="{{asset('backend/libs/datatables/responsive.bootstrap4.css')}}" rel="stylesheet" type="text/css" />
 @endpush
 
 @push('scripts')
 <script src="{{asset('backend/libs/sweetalert2/sweetalert2.min.js')}}"></script>
 <script src="{{asset('backend/js/pages/sweet-alerts.init.js')}}"></script>
+<script src="{{asset('backend/libs/datatables/jquery.dataTables.min.js')}}"></script>
+<script src="{{asset('backend/libs/datatables/dataTables.bootstrap4.min.js')}}"></script>
 @endpush
 
 @section('content')
@@ -33,56 +38,34 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card-box">
+                    <input type="hidden" id="listRoute" value="{{route('users.list')}}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="header-title mb-3">{{ __('users.all') }}</h4>
+                        @can('user.create')
                         <a href="{{ route('users.create') }}"
                             class="btn btn-primary btn-sm">
                             + {{__('global.new')}}
                         </a>
+                        @endcan
                     </div>
                     <x-alert />
-
                     <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead class="thead-light">
-                                <thead>
-                                    <tr>
-                                        <th>Sr No</th>
-                                        <th>Name</th>
-                                        <th>Role</th>
-                                        <th>Permissions Count</th>
-                                        <th>Locked</th>
-                                        <th>Last Login</th>
-                                        <th>Created At</th>
-                                        <th>Created By</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                            <tbody>
-                                @if($users->isNotEmpty())
-                                @foreach($users as $user)
+                        <table id="datatable" class="table table-bordered  dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                            <thead>
                                 <tr>
-                                    <td>{{$loop->iteration}}</td>
-                                    <td>{{$user->name}}</td>
-                                    <td>{{$user->roles->pluck('name')->implode(', ')}}</td>
-                                    <td>{{$user->permissions->pluck('name')->implode(', ')}}</td>
-                                    <td>{{$user->is_locked}}</td>
-                                    <td>{{$user->last_login_at}}</td>
-                                    <td>{{$user->creator->name}}</td>
-                                    <td>{{\Carbon\Carbon::parse($user->created_at)->format('d M, Y')}}</td>
-                                    <td>
-                                        <div class="button-list d-flex align-items-center gap-2">
-                                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-info">{{ __('global.update') }}</a>
-                                            <a href="{{ route('users.permissions', $user) }}" class="btn btn-sm btn-primary">{{ __('users.view_permissions') }}</a>
-                                            <a href="javascript:void(0)" data-action="{{ route('users.destroy', $user) }}" class="btn btn-sm btn-danger btn-delete" data-id="{{$user->id}}">{{ __('global.delete') }}</a>
-                                        </div>
-                                    </td>
+                                    <th>Sr No</th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Permissions Count</th>
+                                    <th>Locked</th>
+                                    <th>Last Login</th>
+                                    <th>Created At</th>
+                                    <th>Created By</th>
+                                    <th>Action</th>
                                 </tr>
-                                @endforeach
-                                @endif
-                            </tbody>
+                            </thead>
+                            <tbody></tbody>
                         </table>
-                        {{$users->links()}}
                     </div>
                 </div>
             </div>
@@ -91,5 +74,21 @@
 </div>
 @endsection
 @push('scripts')
+<script>
+    window.routes = {
+        edit: "{{ route('users.edit', ':id') }}",
+        delete: "{{ route('users.destroy', ':id') }}",
+        permission: "{{ route('users.permissions', ':id') }}",
+    };
+
+    window.lang = {
+        new: @json(__('global.new')),
+        edit: @json(__('global.update')),
+        close: @json(__('global.close')),
+        title: @json(__('users.title')),
+        view_permissions: @json(__('users.view_permissions')) 
+    };
+</script>
+<script src="{{ asset('backend/js/manage-users.js') }}"></script>
 <script src="{{ asset('backend/js/ajax-form-submit.js') }}"></script>
 @endpush

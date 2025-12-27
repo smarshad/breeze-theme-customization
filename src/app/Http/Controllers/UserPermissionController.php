@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Permission;
 use App\Services\UserService;
 use App\Http\Resources\UserResource;
-use App\DTOs\UserDTO;
 use App\Http\Requests\UserPermissionRequest;
 
-class UserPermissionController extends Controller
+class UserPermissionController extends BaseController
 {
 
     public function __construct(private UserService $service) {}
@@ -19,7 +17,7 @@ class UserPermissionController extends Controller
     {
         // Optional: Add a policy or gate check to ensure only authorized users can manage permissions
         // Gate::authorize('manage-user-permissions');
-
+        $this->authorize('viewPermission', $user);
         // 1. Fetch all available permissions
         $permissionsGrouped = Permission::getGroupedByModule();
 
@@ -52,6 +50,7 @@ class UserPermissionController extends Controller
 
         // Debug: Log what's coming in
         logAction('Raw request data for assigning permission to user', 'info', ['request' => $request->all(), 'user id' => $user->id]);
+        $this->authorize('editPermission', $user);
 
         try {
 

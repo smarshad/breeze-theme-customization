@@ -13,11 +13,32 @@ use Illuminate\Support\Facades\DB;
 use App\Services\UserService;
 use App\Http\Resources\UserResource;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Auth;
 
-class UserController extends Controller
+class UserController extends BaseController
 {
 
     public function __construct(private UserService $service) {}
+
+
+    public function list(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', User::class);
+
+        $users = $this->service->paginateForUser(
+            Auth::user(),
+            (int) $request->get('per_page', 10)
+        );
+
+        return UserResource::collection($users)
+            ->additional([
+                'draw' => (int) $request->get('draw', 1),
+                'recordsTotal' => $users->total(),
+                'recordsFiltered' => $users->total(),
+            ])
+            ->response();
+    }
+
 
     /**
      * Display a listing of the resource.
@@ -93,9 +114,10 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(User $user)
     {
-        $user = User::findOrFail($id);
+        $this->authorize('view', $user);
+        $user = User::findOrFail($user->id);
         $roles = Role::where('name', '!=', 'Super Admin')->get();
         $hasRoles = $user->roles;
         return view('admin.users.edit', compact('user', 'roles'));
@@ -106,71 +128,54 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
-        // Debug: Log what's coming in
-        logAction('Raw request update user data', 'info', $request->all());
+        $this->authorize('update', $user);
 
         try {
-            DB::beginTransaction();
-
-            $validatedData = $request->validated();
-
             $dto = UserDTO::fromArray([
                 'id' => $user->id,
-                ...$validatedData,
-            ]);
-            $Oldname = $user->name;
-            $Oldemail = $user->email;
-            $Oldmobile_no = $user->mobile_no;
-
-            $user = $this->service->update($user, $dto);
-
-            logAction('Passing updated data to DTO', 'info', $validatedData);
-
-            $dto = UserDTO::fromArray($validatedData);
-            logAction('DTO updated data created:', 'info', $dto->toArray());
-
-            logAction('user updated created:', 'info',  [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'oldname' => $Oldname,
-                'oldemail' => $Oldemail,
-                'oldmobile' => $Oldmobile_no,
-                'created_by' => $user->created_by,
-                'created_at' => $user->created_at,
+                ...$request->validated(),
             ]);
 
-            DB::commit();
+            $updatedUser = $this->service->update($user, $dto);
+
+            logAction('User updated', 'info', [
+                'user_id'   => $updatedUser->id,
+                'updated_by' => auth()->id(),
+            ]);
 
             return response()->json([
-                'success' => true,
-                'message' => 'User updated successfully',
+                'success'  => true,
+                'message'  => 'User updated successfully',
                 'redirect' => route('users.index'),
-                'data' => new UserResource($user->load(['roles', 'creator'])),
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            logAction('User updation error:', 'warning',  [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'data'     => new UserResource(
+                    $updatedUser->load(['roles', 'creator'])
+                ),
+            ], 200);
+        } catch (\Throwable $e) {
+
+            logAction('User update failed', 'error', [
+                'user_id' => $user->id,
+                'error'   => $e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update user',
-                'error' => config('app.debug') ? $e->getMessage() : 'Server error',
+                'error'   => config('app.debug') ? $e->getMessage() : 'Server error',
             ], 500);
         }
     }
 
+
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request)
+    public function destroy(User $user)
     {
         try {
-            logAction('updated delete:', 'info', $request->all());
-            $this->service->deleteById((int) $request->id);
+            $this->authorize('delete', $user);
+
+            $this->service->delete($user);
 
             return response()->json([
                 'success'  => true,

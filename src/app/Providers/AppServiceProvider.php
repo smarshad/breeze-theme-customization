@@ -10,6 +10,7 @@ use App\Interfaces\ExpenseRepositoryInterface;
 use App\Interfaces\MenuRepositoryInterface;
 use App\Interfaces\PermissionRepositoryInterface;
 use App\Interfaces\RoleRepositoryInterface;
+use App\Interfaces\UserRepositoryInterface;
 use App\Models\Permission;
 use App\Models\User;
 use App\Observers\PermissionObserver;
@@ -20,6 +21,7 @@ use App\Repositories\ExpenseRepository;
 use App\Repositories\MenuRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\RoleRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
@@ -57,10 +59,14 @@ class AppServiceProvider extends ServiceProvider
             PermissionRepository::class
         );
 
-
         $this->app->bind(
             RoleRepositoryInterface::class,
             RoleRepository::class
+        );
+
+        $this->app->bind(
+            UserRepositoryInterface::class,
+            UserRepository::class
         );
     }
 

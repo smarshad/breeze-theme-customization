@@ -71,9 +71,11 @@
                             @endforeach
                         </div>
                         <div class="form-group mb-0 row">
+                            @can('user.update')
                             <div class="offset-3 col-9">
                                 <button type="submit" class="btn btn-info waves-effect waves-light">{{ __('global.update') }}</button>
                             </div>
+                            @endcan
                         </div>
                     </form>
                 </div>

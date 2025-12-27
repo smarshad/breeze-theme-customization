@@ -97,10 +97,12 @@
                         </div>
 
                         <div class="mt-4 text-center">
+                            @can('user.editPermission')
                             <button type="submit" class="btn btn-primary">
                                 {{ __('users.update_permission') }}
                             </button>
-                            <a href="{{ route('users.show', $user) }}" class="btn btn-secondary">
+                            @endcan
+                            <a href="{{ route('users.list') }}" class="btn btn-secondary">
                                 Cancel
                             </a>
                         </div>

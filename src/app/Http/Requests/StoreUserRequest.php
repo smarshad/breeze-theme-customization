@@ -12,7 +12,7 @@ class StoreUserRequest extends BaseFormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('create', User::class);
     }
 
     /**
