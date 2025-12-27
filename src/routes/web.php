@@ -27,7 +27,28 @@ Route::middleware(['auth', 'locked', 'verified'])->prefix('auth')->group(functio
     Route::get('/dashboard2', [DashboardController::class, 'dashboard2'])->name('dashboard2');
     Route::get('/dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
 });
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('dashboard')->group(function () {
 
+        Route::get('summary', [DashboardController::class, 'summary']);
+
+        Route::get('day-wise', [DashboardController::class, 'dayWise']);
+
+        Route::get('category-wise', [DashboardController::class, 'categoryWise']);
+
+        Route::get('monthly-trend', [DashboardController::class, 'monthlyTrend']);
+
+        Route::get('payment-method-wise', [DashboardController::class, 'paymentMethodWise']);
+
+        Route::get('expense-type-wise', [DashboardController::class, 'expenseTypeWise']);
+
+
+        Route::get('comparison', [DashboardController::class, 'comparison']);
+
+
+        Route::get('complete', [DashboardController::class, 'complete']);
+    });
+});
 Route::middleware(['auth', 'locked'])->group(function () {
 
     /**
@@ -57,7 +78,7 @@ Route::middleware(['auth', 'locked'])->group(function () {
     Route::get('roles/list', [RoleController::class, 'getAll'])->name('roles.list');
     Route::get('users/list', [UserController::class, 'list'])->name('users.list');
     Route::resource('users', UserController::class)->except(['show']);
-    
+
     Route::resource('permissions', PermissionController::class)->except(['show']);
     Route::get('permissions/list', [PermissionController::class, 'getAll'])->name('permissions.list');
     /**

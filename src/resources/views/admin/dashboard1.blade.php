@@ -5,7 +5,6 @@
 @endpush
 <!-- Begin page -->
 @section('content')
-<input type="hidden" id="listRoute" value="{{route('dashboard.summary')}}">
 <div class="content">
 
     <!-- Start Content-->
@@ -22,14 +21,39 @@
                             <li class="breadcrumb-item active">Dashboard 1</li>
                         </ol>
                     </div>
-                    <h4 class="page-title">Dashboard</h4>
+                    <h4 class="page-title"><i class="fas fa-chart-line"></i> Dashboard</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col">
+
+                    <p class="text-muted">Expense Analytics & Insights</p>
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary period-btn active" data-period="today">
+                            Today
+                        </button>
+                        <button type="button" class="btn btn-outline-primary period-btn" data-period="week">
+                            Week
+                        </button>
+                        <button type="button" class="btn btn-outline-primary period-btn" data-period="month">
+                            Month
+                        </button>
+                        <button type="button" class="btn btn-outline-primary period-btn" data-period="year">
+                            Year
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- end page title -->
 
         <div class="row">
-           
+
 
             <div class="col-xl-3 col-sm-6">
                 <div class="card-box widget-box-two widget-two-custom">
@@ -39,9 +63,9 @@
                         </div>
 
                         <div class="wigdet-two-content media-body">
-                            <p class="m-0 text-uppercase font-weight-medium text-truncate" title="Statistics">Total Revenue</p>
-                            <h3 class="font-weight-medium my-2">$ <span data-plugin="counterup">65,841</span></h3>
-                            <p class="m-0">Jan - Apr 2019</p>
+                            <p class="m-0 text-uppercase font-weight-medium text-truncate" title="Statistics">Total Expenses</p>
+                            <h3 class="font-weight-medium my-2"> <span data-plugin="counterup" id="totalExpenses">0</span></h3>
+                            <p class="m-0" id="totalExpenses_dateRange">Jan - Apr 2019</p>
                         </div>
                     </div>
                 </div>
@@ -384,4 +408,159 @@
 
 <script src="{{asset('backend/js/pages/dashboard.init.js')}}"></script>
 <script src="{{asset('backend/js/dashboard.js')}}"></script>
+
+<script>
+    // Chart instances
+    let charts = {};
+    let currentPeriod = 'month';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardData();
+
+    });
+
+    function loadDashboardData() {
+        Promise.all([
+            fetch(`/dashboard/summary?period=${currentPeriod}`).then(r => r.json())
+        ]).then(([summary]) => {
+            updateSummaryCards(summary.data);
+
+        })
+    }
+
+    function updateSummaryCards(data) {
+        const totalExpensesElement = document.getElementById('totalExpenses');
+        const dateRangeElement = document.getElementById('totalExpenses_dateRange');
+
+        // Store current value before resetting
+        const currentValue = parseFloat(totalExpensesElement.textContent) || 0;
+        const targetValue = data.total_expenses;
+
+        // Update date range immediately
+        dateRangeElement.textContent = data.date_range;
+
+        // Reset counter element for animation
+        totalExpensesElement.textContent = '0';
+
+        // Remove any existing waypoint/counterup data
+        $(totalExpensesElement).removeData('waypoint');
+        $(totalExpensesElement).removeData('counterup');
+
+        // Use setTimeout to ensure DOM is updated before re-initializing
+        setTimeout(() => {
+            // Set the final value
+            totalExpensesElement.textContent = targetValue;
+
+            // Re-initialize counterUp with new value
+            $(totalExpensesElement).counterUp({
+                delay: 100,
+                time: 1000
+            });
+        }, 50);
+    }
+    
+    /*
+    // ============================================
+// EXAMPLE USAGE IN JAVASCRIPT
+// ============================================
+
+
+loadSummary();
+    async function loadSummary() {
+        try {
+            const response = await fetch('/dashboard/summary?period=month');
+            const data = await response.json();
+
+            if (data.success) {
+                console.log('Total Expenses:', data.data.total_expenses);
+                console.log('Transaction Count:', data.data.total_count);
+                console.log('Average Expense:', data.data.average_expense);
+            }
+        } catch (error) {
+            console.error('Error loading summary:', error);
+        }
+    }
+
+async function loadCategoryChart() {
+    try {
+        const response = await fetch('/api/dashboard/category-wise?period=month');
+        const data = await response.json();
+        
+        if (data.success) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.data.labels,
+                    datasets: data.data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error loading category chart:', error);
+    }
+}
+
+
+async function loadMonthlyTrend() {
+    try {
+        const response = await fetch('/api/dashboard/monthly-trend?year=2024');
+        const data = await response.json();
+        
+        if (data.success) {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.data.labels,
+                    datasets: data.data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error loading monthly trend:', error);
+    }
+}
+
+
+async function loadComparison() {
+    try {
+        const response = await fetch('/api/dashboard/comparison?period=month');
+        const data = await response.json();
+        
+        if (data.success) {
+            const comparison = data.data.comparison;
+            console.log('Difference:', comparison.difference);
+            console.log('Percentage Change:', comparison.percentage_change);
+            console.log('Trend:', comparison.trend);
+        }
+    } catch (error) {
+        console.error('Error loading comparison:', error);
+    }
+}
+
+
+async function loadCompleteDashboard() {
+    try {
+        const response = await fetch('/api/dashboard/complete?period=month');
+        const data = await response.json();
+        
+        if (data.success) {
+            // All data available in data.data
+            console.log('Dashboard Data:', data.data);
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}*/
+</script>
+
 @endpush
