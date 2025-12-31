@@ -10,12 +10,14 @@ use App\Models\Category;
 use App\Models\Expense;
 use App\Models\ExpenseType;
 use App\Models\PaymentMethod;
+use App\Models\User;
 use App\Services\ExpenseService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use DomainException;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends BaseController
@@ -26,17 +28,36 @@ class ExpenseController extends BaseController
 
     public function __construct(protected ExpenseService $service) {}
 
+
     public function getAll(Request $request): JsonResponse
     {
+        // 1. Authorize the action using the ExpensePolicy
+        // This will throw an AuthorizationException (403 Forbidden) if the user is not authorized
+        // to view any categories (i.e., viewAny returns false).
+        $this->authorize('viewAny', Expense::class);
 
-        $perPage            = $request->get('per_page', NULL);
-        $data               = $this->service->getPaginated($perPage);
+        // 2. Get the authenticated user.
+        $user = Auth::user();
+
+        // Safety check: If the route is not protected by 'auth' middleware, $user could be null.
+        // We ensure the user is an instance of the User model before passing it to the service.
+        if (!$user instanceof User) {
+            // If the user is not authenticated, we throw an exception.
+            // In a real Laravel app, the 'auth' middleware should handle this,
+            // but this check adds robustness.
+            abort(401, 'Unauthenticated.');
+        }
+
+        $perPage            = $request->get('per_page', 5);
+        $categories         = $this->service->getPaginated($user, $perPage);
         $draw               = $request->get('draw', 1);
-        $response           = ExpenseResource::collection($data)->response()->getData(true);
+        $response           = ExpenseResource::collection($categories)->response()->getData(true);
         $response['draw']   = (int) $draw;
         $response['recordsTotal'] = $response['meta']['total'];
         $response['recordsFiltered'] = $response['meta']['total'];
         return response()->json($response);
+        // Using collection::make for paginated resource response
+        // return CategoryResource::collection($categories);
     }
 
     public function index()
@@ -80,9 +101,10 @@ class ExpenseController extends BaseController
     /**
      * Display the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Expense $expense)
     {
-        $expense        = Expense::findOrFail($id);
+        $this->authorize('show', $expense);
+        $expense        = Expense::findOrFail($expense->id);
         $categories     = Category::all();
         $expenseTypes   = ExpenseType::all();
         $paymentMethods = PaymentMethod::all();
@@ -93,7 +115,7 @@ class ExpenseController extends BaseController
      * update the specified resource in storage
      */
 
-    public function update(UpdateRequest $request)
+    public function update(UpdateRequest $request, Expense $expense)
     {
         try {
             $this->logInfo('Raw data for update expense', $request->all());
@@ -101,7 +123,7 @@ class ExpenseController extends BaseController
             // valiadate data and make DTO
             $dto = $this->createDTOFromRequest($request);
 
-            $udapteData = $this->service->update($request->id, $dto);
+            $udapteData = $this->service->update($expense->id, $dto);
 
             return $this->successResponse(
                 $udapteData,
@@ -173,29 +195,30 @@ class ExpenseController extends BaseController
         return $dto;
     }
 
-    public function destroy(string $id)
+    public function destroy(Expense $expense)
     {
         try {
+            $this->authorize('delete', $expense);
             // Log raw incoming data
             $this->logInfo('Raw request data for delete expense');
 
-            $existingExpense = Expense::find($id);
-            if ($existingExpense) {
-                if ($existingExpense->file_path) {
-                    Storage::disk('public')->delete($existingExpense->file_path);
-                    $this->logInfo('Old expense file deleted during delete', ['path' => $existingExpense->file_path]);
-                }
+
+            if ($$expense->file_path) {
+                Storage::disk('public')->delete($$expense->file_path);
+                $this->logInfo('Old expense file deleted during delete', ['path' => $$expense->file_path]);
             }
 
-            $delete = $this->service->delete($id);
+            $delete = $this->service->delete($expense->id);
 
             if ($delete) {
                 return $this->successResponse(NULL, 'expense Deleted Successfully');
             } else {
                 return $this->errorResponse('Error While Deleting expense', 409);
             }
-        } catch (Exception $e) {
-            return $this->handleUnexpectedException($e);
+        } catch (ValidationException $e) {
+            return $this->handleValidationException($e);
+        } catch (DomainException $e) {
+            return $this->handleDomainException($e);
         }
     }
 }

@@ -211,7 +211,7 @@ class DashboardController extends Controller
      *   }
      * }
      */
-    public function categoryWise(Request $request): JsonResponse
+    public function categoryWiseNew(Request $request): JsonResponse
     {
         try {
             $period = $request->query('period', 'month');
@@ -282,6 +282,111 @@ class DashboardController extends Controller
         }
     }
 
+    public function categoryWise(Request $request): JsonResponse
+    {
+        try {
+            $period = $request->query('period', 'month');
+            $userId = auth()->id();
+
+            [$startDate, $endDate] = $this->getDateRange($period, $request);
+
+            // Get category-wise expenses with category colors
+            $expenses = Expense::select(
+                'categories.id',
+                'categories.name',
+                'categories.color_code', // Add color if you have it
+                DB::raw('SUM(expenses.amount) as total'),
+                DB::raw('COUNT(expenses.id) as count')
+            )
+                ->join('categories', 'expenses.category_id', '=', 'categories.id')
+                ->where('expenses.created_by', $userId)
+                ->whereNull('expenses.deleted_at')
+                ->whereBetween('expenses.expense_date', [$startDate, $endDate])
+                ->whereNull('categories.deleted_at')
+                ->groupBy('categories.id', 'categories.name', 'categories.color_code')
+                ->orderByDesc('total')
+                ->get();
+
+            $labels = [];
+            $data = [];
+            $backgroundColors = [];
+            $borderColors = [];
+            $totalAmount = 0;
+
+            foreach ($expenses as $index => $expense) {
+                $labels[] = $expense->name;
+                $data[] = (float) $expense->total;
+
+                // Use category color if exists, otherwise use default colors
+                if (!empty($expense->color)) {
+                    $backgroundColors[] = $expense->color;
+                    $borderColors[] = $this->adjustBrightness($expense->color, -0.2); // Darker border
+                } else {
+                    $defaultColors = $this->getChartColors();
+                    $backgroundColors[] = $defaultColors[$index % count($defaultColors)];
+                    $borderColors[] = '#fff';
+                }
+
+                $totalAmount += $expense->total;
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Category-wise expenses retrieved successfully',
+                'data' => [
+                    'labels' => $labels,
+                    'datasets' => [
+                        [
+                            'label' => 'Amount Spent',
+                            'data' => $data,
+                            'backgroundColor' => $backgroundColors,
+                            'borderColor' => $borderColors,
+                            'borderWidth' => 2,
+                            'hoverOffset' => 4 // Add hover effect
+                        ]
+                    ],
+                    'total' => round($totalAmount, 2),
+                    'formatted_total' => 'Rs. ' . number_format(round($totalAmount, 2), 2),
+                    'count' => count($expenses),
+                    'period' => $this->getPeriodLabel($period),
+                    'date_range' => $this->formatDateRange($startDate, $endDate),
+                    'details' => $expenses->map(function ($e) use ($totalAmount) {
+                        return [
+                            'id' => $e->id,
+                            'category' => $e->name,
+                            'color' => $e->color_code ?? null,
+                            'amount' => round($e->total, 2),
+                            'formatted_amount' => 'Rs. ' . number_format(round($e->total, 2), 2),
+                            'count' => $e->count,
+                            'percentage' => $totalAmount > 0 ? round(($e->total / $totalAmount) * 100, 2) : 0,
+                            'avg_per_item' => $e->count > 0 ? round($e->total / $e->count, 2) : 0
+                        ];
+                    })->toArray()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving category-wise expenses',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Helper method to adjust color brightness
+    private function adjustBrightness($color, $amount)
+    {
+        $color = ltrim($color, '#');
+        if (strlen($color) == 3) {
+            $color = $color[0] . $color[0] . $color[1] . $color[1] . $color[2] . $color[2];
+        }
+
+        $r = max(0, min(255, hexdec(substr($color, 0, 2)) + ($amount * 255)));
+        $g = max(0, min(255, hexdec(substr($color, 2, 2)) + ($amount * 255)));
+        $b = max(0, min(255, hexdec(substr($color, 4, 2)) + ($amount * 255)));
+
+        return sprintf('#%02x%02x%02x', $r, $g, $b);
+    }
     /**
      * Get monthly expense trend
      * 

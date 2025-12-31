@@ -488,7 +488,7 @@
      * Update summary cards
      */
     function updateSummaryCards(data) {
-        document.getElementById('totalExpenses').textContent = 'Rs. ' + data.total_expenses.toFixed(2);
+        document.getElementById('totalExpenses').textContent = 'Rs. ' + data.total_expenses;
         document.getElementById('totalCount').textContent = data.total_count;
         document.getElementById('averageExpense').textContent = 'Rs. ' + data.average_expense.toFixed(2);
         document.getElementById('highestExpense').textContent = 'Rs. ' + data.highest_expense.toFixed(2);

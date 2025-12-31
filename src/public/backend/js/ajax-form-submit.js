@@ -289,3 +289,16 @@ function hideTableLoader() {
     // DataTables will repopulate rows automatically, so nothing needed here
     $('#datatable .table-loading-row').remove();
 }
+
+function showTableLoader() {
+    const colspan = $('#datatable thead th').length;
+
+    $('#datatable tbody').html(`
+        <tr class="table-loading-row">
+            <td colspan="${colspan}">
+                <div class="spinner-border text-primary" role="status"></div>
+                <span class="ms-2">Loading...</span>
+            </td>
+        </tr>
+    `);
+}

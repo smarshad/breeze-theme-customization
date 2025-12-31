@@ -14,7 +14,7 @@ $(function () {
         }
 
         table = $('#datatable').DataTable({
-            processing: true,
+            processing: false,
             serverSide: true,
             responsive: true,
             searching: true,
@@ -25,7 +25,7 @@ $(function () {
                 url: url,
                 type: "GET",
 
-                // 🔥 FIX: The 'data' function MUST be inside the 'ajax' object
+                // FIX: The 'data' function MUST be inside the 'ajax' object
                 data: function (d) {
                     // Calculate the page number: (offset / limit) + 1
                     var page = (d.start / d.length) + 1;
@@ -46,6 +46,29 @@ $(function () {
                     // Your backend is now sending the correct format, 
                     // so this function is correct for extracting the data array.
                     return json.data || [];
+                },error: function (xhr) {
+                    hideTableLoader();
+                    let message = 'Something went wrong. Please try again.';
+
+                    if (xhr.status === 401) {
+                        message = 'You are not authenticated. Please log in again.';
+                    }
+
+                    if (xhr.status === 403) {
+                        message = 'You are not authorized to view this data.';
+                    }
+
+                    if (xhr.status === 422) {
+                        message = 'Validation error occurred.';
+                    }
+
+                    if (xhr.responseJSON?.message) {
+                        console.log('here')
+
+                        message = xhr.responseJSON.message;
+                    }
+
+                    showAlert(message);
                 }
             },
 
@@ -68,8 +91,11 @@ $(function () {
                 { data: "created_at" },
                 { data: "creator.name" },
                 {
-                    data: "id",
-                    render: id => renderActionButtons(id)
+                    render: function (data, type, row) {
+                        // 'row' now contains the full object for the current row,
+                        // including the 'can' permissions from the backend.
+                        return renderActionButtons(row);
+                    }
                 }
             ],
 
@@ -78,7 +104,7 @@ $(function () {
             }
         });
 
-        // 🔥 Add loader inside table rows
+        // Add loader inside table rows
         table.on('processing.dt', function (e, settings, processing) {
             if (processing) {
                 showTableLoader();
@@ -86,43 +112,30 @@ $(function () {
         });
     }
 
-    function renderActionButtons(id) {
-        const editUrl = window.routes.edit.replace(':id', id);
-        const deleteUrl = window.routes.delete.replace(':id', id);
-        const titleText = `${window.lang.edit} ${window.lang.category_title}`;
-
-        return `
-            <a
+    function renderActionButtons(rowData) {
+        const editUrl = window.routes.edit.replace(':id', rowData.id);
+        const deleteUrl = window.routes.delete.replace(':id', rowData.id);
+        const titleText = `${window.lang.edit} ${window.lang.title}`;
+        let buttonsHtml = '';
+        if (rowData.can && rowData.can.show) {
+            buttonsHtml += `<a
                 class="btn btn-sm btn-primary"
                 href='${editUrl}'>
-                ${window.lang.edit}
-            </a>
-            <button class="btn btn-sm btn-danger btn-delete" data-action="${deleteUrl}" data-id="${id}">
+                ${titleText}
+            </a>`;
+        }
+
+        if (rowData.can && rowData.can.delete) {
+            buttonsHtml += ` <button class="btn btn-sm btn-danger btn-delete" data-action="${deleteUrl}" data-id="${rowData.id}">
                 Delete
-            </button>
-        `;
+            </button>`;
+        }
+        return buttonsHtml.trim();
     }
 
     function filePath(data) {
         const fullUrl = `${window.location.origin}/storage/${data}`;
         if (!data) return "-"; // no file
             return `<a href="${fullUrl}" target="_blank" class="btn btn-secondary">View File</a>`;
-    }
-
-    function showTableLoader() {
-        const colspan = $('#datatable thead th').length;
-
-        $('#datatable tbody').html(`
-            <tr class="table-loading-row">
-                <td colspan="${colspan}">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <span class="ms-2">Loading...</span>
-                </td>
-            </tr>
-        `);
-    }
-
-    function hideTableLoader() {
-        // DataTables will repopulate rows automatically, so nothing needed here
     }
 });

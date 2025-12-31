@@ -14,6 +14,9 @@ $formAction = $isEdit ? route('expense.update', $expense->id) : route('expense.s
 $pageTitle = $isEdit ? __('expense.edit_title') : __('expense.create_title');
 $breadcrumbActive = $isEdit ? 'Edit' : 'New';
 $buttonText = $isEdit ? __('global.update') : __('global.save');
+$canSubmit = $isEdit
+        ? Gate::allows('update', $expense)
+        : Gate::allows('create', App\Models\Expense::class);
 @endphp
 
 @section('content')
@@ -52,6 +55,12 @@ $buttonText = $isEdit ? __('global.update') : __('global.save');
                         @csrf
                         @if($isEdit)
                         @method('PUT')
+                        @endif
+
+                        @if(!$canSubmit)
+                            <p class="text-danger d-block mt-1">
+                                You do not have permission to {{ $isEdit ? 'update' : 'create' }} this expense.
+                            </p>
                         @endif
                         <div class="form-group row">
                             <label for="category_id" class="col-3 col-form-label">Select Category</label>
@@ -179,9 +188,10 @@ $buttonText = $isEdit ? __('global.update') : __('global.save');
                             </div>
                             @endif
                         </div>
+                       
                         <div class="form-group mb-0 row">
                             <div class="col-12 text-center">
-                                <button type="submit" class="btn btn-info waves-effect waves-light">{{ $buttonText }}</button>
+                                <button type="submit" class="btn btn-info waves-effect waves-light" @disabled(!$canSubmit)>{{ $buttonText }}</button>
                                 <button type="reset" class="btn btn-danger waves-effect waves-light">{{ __('global.reset') }}</button>
                             </div>
                         </div>

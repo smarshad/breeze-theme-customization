@@ -43,11 +43,13 @@
                     <input type="hidden" id="listRoute" value="{{route('expense.list')}}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="header-title mb-3">{{ __('expense.all') }}</h4>
+                        @can('expense.create')
                         <a
                             class="btn btn-primary btn-sm"
                             href="{{ route('expense.create') }}">
                             + {{__('global.new')}}
                         </a>
+                        @endcan
                     </div>
                     <x-alert />
 

@@ -13,6 +13,7 @@ use App\Http\Controllers\ExpenseTypeController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserPermissionController;
@@ -22,33 +23,39 @@ Route::get('/', function () {
 });
 
 Route::get('/logs', [LogViewerController::class, 'index'])->name('logs');
+
 Route::middleware(['auth', 'locked', 'verified'])->prefix('auth')->group(function () {
     Route::get('/dashboard1', [DashboardController::class, 'dashboard1'])->name('dashboard1');
     Route::get('/dashboard2', [DashboardController::class, 'dashboard2'])->name('dashboard2');
     Route::get('/dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
 });
-Route::middleware(['auth'])->group(function () {
+
+Route::middleware(['auth','locked'])->group(function () {
     Route::prefix('dashboard')->group(function () {
-
         Route::get('summary', [DashboardController::class, 'summary']);
-
         Route::get('day-wise', [DashboardController::class, 'dayWise']);
-
         Route::get('category-wise', [DashboardController::class, 'categoryWise']);
-
         Route::get('monthly-trend', [DashboardController::class, 'monthlyTrend']);
-
         Route::get('payment-method-wise', [DashboardController::class, 'paymentMethodWise']);
-
         Route::get('expense-type-wise', [DashboardController::class, 'expenseTypeWise']);
-
-
         Route::get('comparison', [DashboardController::class, 'comparison']);
-
-
         Route::get('complete', [DashboardController::class, 'complete']);
     });
+
+    Route::prefix('reports')->group(function () {
+        Route::get('/', [ReportsController::class, 'index'])->name('reports.index');
+        Route::get('detailed', [ReportsController::class, 'detailedReport']);
+        Route::get('category', [ReportsController::class, 'categoryReport']);
+        Route::get('payment-method', [ReportsController::class, 'paymentMethodReport']);
+        Route::get('monthly-summary', [ReportsController::class, 'monthlySummaryReport']);
+        Route::get('custom', [ReportsController::class, 'customReport']);
+        Route::get('export-csv', [ReportsController::class, 'exportCsv']);
+        Route::get('export-pdf', [ReportsController::class, 'exportPdf']);
+        Route::get('export-excel', [ReportsController::class, 'exportExcel']);
+    });
 });
+
+
 Route::middleware(['auth', 'locked'])->group(function () {
 
     /**
@@ -172,9 +179,9 @@ Route::middleware(['auth', 'locked'])->group(function () {
             Route::get('/getAll', 'getAll')->name('list');             // paymentmethod.list
             Route::get('/create', 'create')->name('create');           // paymentmethod.create
             Route::post('/store', 'store')->name('store');             // paymentmethod.store
-            Route::get('/{id}/edit', 'edit')->name('edit');            // paymentmethod.edit
-            Route::put('/{id}', 'update')->name('update');             // paymentmethod.update
-            Route::delete('/{id}', 'destroy')->name('destroy');        // paymentmethod.destroy
+            Route::get('/{expense}/edit', 'edit')->name('edit');       // paymentmethod.edit
+            Route::put('/{expense}', 'update')->name('update');        // paymentmethod.update
+            Route::delete('/{expense}', 'destroy')->name('destroy');   // paymentmethod.destroy
         });
 });
 

@@ -19,9 +19,18 @@ class ExpenseService
 
     public function __construct(protected ExpenseRepository $expenseRepository) {}
 
-    public function getPaginated(?int $perPage = null): LengthAwarePaginator
+    public function getPaginated(User $user, ?int $perPage = null): LengthAwarePaginator
     {
-        return $this->expenseRepository->getPaginated($perPage);
+        $userId = null; // Default: view all
+
+        // Check for 'view all' permission
+        if ($user->can('expense.view.all')) {
+            $userId = null; // No filtering needed
+        } elseif ($user->can('expense.view.own')) {
+            // If only 'view own' is granted, filter by the user's ID
+            $userId = $user->id;
+        }
+        return $this->expenseRepository->getPaginated($perPage, ['*'], $userId);
     }
 
     public function create(ExpenseDTO $expenseDTO): Expense

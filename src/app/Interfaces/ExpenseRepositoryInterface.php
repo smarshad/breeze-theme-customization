@@ -18,7 +18,7 @@ interface ExpenseRepositoryInterface
      * Retrieve records with pagination
      */
 
-    public function getPaginated(?int $perPage = null, array $column = ['*']): LengthAwarePaginator;
+    public function getPaginated(int $perPage = 15, array $columns = ['*'], ?int $userId = null): LengthAwarePaginator;
 
     /**
      * Create new Record

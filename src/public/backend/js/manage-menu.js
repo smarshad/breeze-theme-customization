@@ -27,7 +27,7 @@ $(function () {
                 beforeSend: function () {
                     showTableLoader(); // ✅ show loader
                 },
-                // 🔥 FIX: The 'data' function MUST be inside the 'ajax' object
+                // FIX: The 'data' function MUST be inside the 'ajax' object
                 data: function (d) {
                     // Calculate the page number: (offset / limit) + 1
                     var page = (d.start / d.length) + 1;
@@ -104,7 +104,7 @@ $(function () {
             }
         });
 
-        // 🔥 Add loader inside table rows
+        // Add loader inside table rows
         // table.on('processing.dt', function (e, settings, processing) {
         //     if (processing) {
         //         showTableLoader();
@@ -139,18 +139,4 @@ $(function () {
         // Return the generated HTML (will be empty if user has no permissions)
         return buttonsHtml.trim();
     }
-
-    function showTableLoader() {
-        const colspan = $('#datatable thead th').length;
-
-        $('#datatable tbody').html(`
-            <tr class="table-loading-row">
-                <td colspan="${colspan}">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <span class="ms-2">Loading...</span>
-                </td>
-            </tr>
-        `);
-    }
-
 });

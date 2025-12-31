@@ -22,12 +22,17 @@ class ExpenseRepository implements ExpenseRepositoryInterface
         return $this->model->create($data);
     }
 
-    public function getPaginated(?int $perPage = null, array $columns = ['*']): LengthAwarePaginator
-    {
-        $perPage = $perPage ?? config('pagination.default');
-        return $this->model->with('creator', 'category', 'paymentMethod', 'expenseType')->paginate($perPage, $columns);
+    public function getPaginated(int $perPage = 15, array $columns = ['*'], ?int $userId = null): LengthAwarePaginator {
+        $query = $this->model
+            ->with(['creator', 'category', 'paymentMethod', 'expenseType']);
+    
+        if ($userId !== null) {
+            $query->where('created_by', $userId);
+        }
+    
+        return $query->paginate($perPage, $columns);
     }
-
+    
     public function update(int $id, array $data): Expense
     {
         $expense = $this->findById($id);

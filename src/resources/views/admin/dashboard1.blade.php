@@ -59,13 +59,13 @@
                 <div class="card-box widget-box-two widget-two-custom">
                     <div class="media">
                         <div class="avatar-lg rounded-circle bg-primary widget-two-icon align-self-center">
-                            <i class="mdi mdi-currency-usd avatar-title font-30 text-white"></i>
+                            <i class="fas fa-wallet avatar-title font-30 text-white"></i>
                         </div>
 
                         <div class="wigdet-two-content media-body">
                             <p class="m-0 text-uppercase font-weight-medium text-truncate" title="Statistics">Total Expenses</p>
                             <h3 class="font-weight-medium my-2"> <span data-plugin="counterup" id="totalExpenses">0</span></h3>
-                            <p class="m-0" id="totalExpenses_dateRange">Jan - Apr 2019</p>
+                            <p class="m-0 dateRange"></p>
                         </div>
                     </div>
                 </div>
@@ -76,13 +76,13 @@
                 <div class="card-box widget-box-two widget-two-custom ">
                     <div class="media">
                         <div class="avatar-lg rounded-circle bg-primary widget-two-icon align-self-center">
-                            <i class="mdi mdi-account-multiple avatar-title font-30 text-white"></i>
+                            <i class="fas fa-receipt avatar-title font-30 text-white"></i>
                         </div>
 
                         <div class="wigdet-two-content media-body">
-                            <p class="m-0 text-uppercase font-weight-medium text-truncate" title="Statistics">Total Unique Visitors</p>
-                            <h3 class="font-weight-medium my-2"> <span data-plugin="counterup">26,521</span></h3>
-                            <p class="m-0">Jan - Apr 2019</p>
+                            <p class="m-0 text-uppercase font-weight-medium text-truncate" title="Statistics">Transactions</p>
+                            <h3 class="font-weight-medium my-2"> <span data-plugin="counterup" id="totalCount">0</span></h3>
+                            <p class="m-0 dateRange"></p>
                         </div>
                     </div>
                 </div>
@@ -93,13 +93,13 @@
                 <div class="card-box widget-box-two widget-two-custom ">
                     <div class="media">
                         <div class="avatar-lg rounded-circle bg-primary widget-two-icon align-self-center">
-                            <i class="mdi mdi-crown avatar-title font-30 text-white"></i>
+                            <i class="fas fa-chart-bar avatar-title font-30 text-white"></i>
                         </div>
 
                         <div class="wigdet-two-content media-body">
-                            <p class="m-0 text-uppercase font-weight-medium text-truncate" title="Statistics">Number of Transactions</p>
-                            <h3 class="font-weight-medium my-2"><span data-plugin="counterup">7,842</span></h3>
-                            <p class="m-0">Jan - Apr 2019</p>
+                            <p class="m-0 text-uppercase font-weight-medium text-truncate" title="Statistics">Average Expense</p>
+                            <h3 class="font-weight-medium my-2"><span data-plugin="counterup" id="averageExpense">0</span></h3>
+                            <p class="m-0 dateRange"></p>
                         </div>
                     </div>
                 </div>
@@ -110,13 +110,13 @@
                 <div class="card-box widget-box-two widget-two-custom ">
                     <div class="media">
                         <div class="avatar-lg rounded-circle bg-primary widget-two-icon align-self-center">
-                            <i class="mdi mdi-auto-fix  avatar-title font-30 text-white"></i>
+                            <i class="fas fa-arrow-up avatar-title font-30 text-white"></i>
                         </div>
 
                         <div class="wigdet-two-content media-body">
-                            <p class="m-0 text-uppercase font-weight-medium text-truncate" title="Statistics">Conversation Rate</p>
-                            <h3 class="font-weight-medium my-2"><span data-plugin="counterup">2.07</span>%</h3>
-                            <p class="m-0">Jan - Apr 2019</p>
+                            <p class="m-0 text-uppercase font-weight-medium text-truncate" title="Statistics">Highest Expense</p>
+                            <h3 class="font-weight-medium my-2"><span data-plugin="counterup" id="highestExpense">0</span></h3>
+                            <p class="m-0 dateRange"></p>
                         </div>
                     </div>
                 </div>
@@ -126,7 +126,7 @@
         <!-- end row -->
 
         <div class="row">
-            <div class="col-xl-4">
+            <div class="col-xl-6">
                 <div class="card-box">
                     <h4 class="header-title mb-4">Revenue Comparison</h4>
 
@@ -141,7 +141,7 @@
                 </div>
             </div>
 
-            <div class="col-xl-4">
+            <div class="col-xl-6">
                 <div class="card-box">
                     <h4 class="header-title mb-4">Visitors Overview</h4>
 
@@ -151,7 +151,7 @@
                     </div>
 
                     <div class="chart-container" dir="ltr">
-                        <div class="" style="height:280px" id="user_type_bar"></div>
+                        <div class="" style="height:280px" id="categoryChart"></div>
                     </div>
                 </div>
             </div>
@@ -407,7 +407,7 @@
 <script src="{{asset('backend/libs/echarts/echarts.min.js')}}"></script>
 
 <script src="{{asset('backend/js/pages/dashboard.init.js')}}"></script>
-<script src="{{asset('backend/js/dashboard.js')}}"></script>
+<!-- <script src="{{asset('backend/js/dashboard.js')}}"></script> -->
 
 <script>
     // Chart instances
@@ -421,146 +421,237 @@
 
     function loadDashboardData() {
         Promise.all([
-            fetch(`/dashboard/summary?period=${currentPeriod}`).then(r => r.json())
-        ]).then(([summary]) => {
+            fetch(`/dashboard/summary?period=${currentPeriod}`).then(r => r.json()),
+            fetch(`/dashboard/category-wise?period=${currentPeriod}`).then(r => r.json()),
+        ]).then(([summary, category]) => {
             updateSummaryCards(summary.data);
+            updateCategoryChart(category.data);
 
         })
     }
 
     function updateSummaryCards(data) {
-        const totalExpensesElement = document.getElementById('totalExpenses');
-        const dateRangeElement = document.getElementById('totalExpenses_dateRange');
+        // Elements to update
+        const elements = {
+            totalCount: document.getElementById('totalCount'),
+            totalExpenses: document.getElementById('totalExpenses'),
+            averageExpense: document.getElementById('averageExpense'),
+            highestExpense: document.getElementById('highestExpense'),
+            lowestExpense: document.getElementById('lowestExpense'),
+        };
+        const dateRangeElements = document.querySelectorAll('.dateRange') // or getElementById
 
-        // Store current value before resetting
-        const currentValue = parseFloat(totalExpensesElement.textContent) || 0;
-        const targetValue = data.total_expenses;
+        // Update date range immediately (not animated)
 
-        // Update date range immediately
-        dateRangeElement.textContent = data.date_range;
+        dateRangeElements.forEach(element => {
+            element.textContent = data.date_range;
+        });
 
-        // Reset counter element for animation
-        totalExpensesElement.textContent = '0';
+        // Store target values
+        const targetValues = {
+            totalCount: data.total_count,
+            totalExpenses: data.total_expenses,
+            averageExpense: data.average_expense,
+            highestExpense: data.highest_expense,
+            lowestExpense: data.lowest_expense
+        };
 
-        // Remove any existing waypoint/counterup data
-        $(totalExpensesElement).removeData('waypoint');
-        $(totalExpensesElement).removeData('counterup');
+        // Reset all counters to 0 for animation
+        Object.keys(elements).forEach(key => {
+            if (key !== 'dateRange' && elements[key]) {
+                elements[key].textContent = '0';
+                // Clear any existing counterUp data
+                $(elements[key]).removeData('counterup');
+                $(elements[key]).removeData('waypoint');
+            }
+        });
 
-        // Use setTimeout to ensure DOM is updated before re-initializing
+        // Animate all counters after a short delay
         setTimeout(() => {
-            // Set the final value
-            totalExpensesElement.textContent = targetValue;
+            Object.keys(elements).forEach(key => {
+                if (key !== 'dateRange' && elements[key] && targetValues[key] !== undefined) {
+                    // Set final value
+                    elements[key].textContent = targetValues[key];
 
-            // Re-initialize counterUp with new value
-            $(totalExpensesElement).counterUp({
-                delay: 100,
-                time: 1000
+                    // Initialize counterUp for each element
+                    $(elements[key]).counterUp({
+                        delay: 10,
+                        time: 1000
+                    });
+                }
             });
         }, 50);
     }
-    
-    /*
-    // ============================================
-// EXAMPLE USAGE IN JAVASCRIPT
-// ============================================
 
 
-loadSummary();
-    async function loadSummary() {
-        try {
-            const response = await fetch('/dashboard/summary?period=month');
-            const data = await response.json();
+    function updateCategoryChart(data) {
+        console.log('Updating category chart with:', data);
 
-            if (data.success) {
-                console.log('Total Expenses:', data.data.total_expenses);
-                console.log('Transaction Count:', data.data.total_count);
-                console.log('Average Expense:', data.data.average_expense);
-            }
-        } catch (error) {
-            console.error('Error loading summary:', error);
+        const container = document.getElementById('categoryChart');
+
+        if (!container) {
+            console.error('Container element #categoryChart not found');
+            return;
         }
-    }
 
-async function loadCategoryChart() {
-    try {
-        const response = await fetch('/api/dashboard/category-wise?period=month');
-        const data = await response.json();
-        
-        if (data.success) {
-            const ctx = document.getElementById('categoryChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: data.data.labels,
-                    datasets: data.data.datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
+        // Check if ECharts is available
+        if (typeof echarts === 'undefined') {
+            console.error('ECharts is not loaded');
+            container.innerHTML = '<div class="alert alert-danger">Chart library not loaded</div>';
+            return;
+        }
+
+        // Initialize or get ECharts instance
+        let chart = echarts.getInstanceByDom(container);
+        if (!chart) {
+            chart = echarts.init(container);
+        }
+
+        // Prepare ECharts options
+        const option = {
+            tooltip: {
+                trigger: 'item',
+                formatter: function(params) {
+                    const value = params.value || 0;
+                    const percentage = params.percent || 0;
+                    return `${params.name}<br/>Rs. ${value.toFixed(2)} (${percentage}%)`;
                 }
-            });
-        }
-    } catch (error) {
-        console.error('Error loading category chart:', error);
-    }
-}
-
-
-async function loadMonthlyTrend() {
-    try {
-        const response = await fetch('/api/dashboard/monthly-trend?year=2024');
-        const data = await response.json();
-        
-        if (data.success) {
-            const ctx = document.getElementById('monthlyChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.data.labels,
-                    datasets: data.data.datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
+            },
+            legend: {
+                orient: 'vertical',
+                right: 10,
+                top: 'center',
+                textStyle: {
+                    fontSize: 12
                 }
-            });
-        }
-    } catch (error) {
-        console.error('Error loading monthly trend:', error);
+            },
+            series: [{
+                name: 'Category Distribution',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                center: ['40%', '50%'],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 5,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                label: {
+                    show: false,
+                    position: 'center'
+                },
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: '16',
+                        fontWeight: 'bold'
+                    }
+                },
+                labelLine: {
+                    show: false
+                },
+                data: data.labels.map((label, index) => ({
+                    name: label,
+                    value: data.datasets[0].data[index],
+                    itemStyle: {
+                        color: data.datasets[0].backgroundColor[index]
+                    }
+                }))
+            }]
+        };
+
+        // Set option and resize
+        chart.setOption(option);
+        chart.resize();
+
+        // Store chart reference
+        charts.category = chart;
+
+        // Update details
+        // updateCategoryDetails(data);
     }
-}
 
+    function updateCategoryDetails(data) {
+        const detailsContainer = document.getElementById('categoryDetailsContainer') ||
+            document.getElementById('categoryDetails');
 
-async function loadComparison() {
-    try {
-        const response = await fetch('/api/dashboard/comparison?period=month');
-        const data = await response.json();
-        
-        if (data.success) {
-            const comparison = data.data.comparison;
-            console.log('Difference:', comparison.difference);
-            console.log('Percentage Change:', comparison.percentage_change);
-            console.log('Trend:', comparison.trend);
+        if (!detailsContainer) {
+            console.warn('Details container not found');
+            return;
         }
-    } catch (error) {
-        console.error('Error loading comparison:', error);
-    }
-}
 
-
-async function loadCompleteDashboard() {
-    try {
-        const response = await fetch('/api/dashboard/complete?period=month');
-        const data = await response.json();
-        
-        if (data.success) {
-            // All data available in data.data
-            console.log('Dashboard Data:', data.data);
+        if (!data.details || !Array.isArray(data.details) || data.details.length === 0) {
+            detailsContainer.innerHTML = '<div class="alert alert-info">No category data available</div>';
+            return;
         }
-    } catch (error) {
-        console.error('Error loading dashboard:', error);
+
+        let detailsHtml = `
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th class="text-end">Amount</th>
+                        <th class="text-end">%</th>
+                        <th class="text-center">Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+        data.details.forEach(item => {
+            const colorIndex = data.details.indexOf(item) % 12;
+            const colors = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                '#9966FF', '#FF9F40', '#8AC926', '#1982C4',
+                '#6A4C93', '#F15BB5', '#00BBF9', '#00F5D4'
+            ];
+
+            detailsHtml += `
+            <tr>
+                <td>
+                    <span class="badge" style="background-color: ${colors[colorIndex]}">&nbsp;&nbsp;</span>
+                    ${item.category}
+                </td>
+                <td class="text-end">Rs. ${item.amount?.toFixed(2) || '0.00'}</td>
+                <td class="text-end">
+                    <div class="d-flex align-items-center justify-content-end">
+                        <div class="progress flex-grow-1 me-2" style="height: 4px; max-width: 60px;">
+                            <div class="progress-bar" style="width: ${item.percentage || 0}%"></div>
+                        </div>
+                        ${item.percentage?.toFixed(1) || '0'}%
+                    </div>
+                </td>
+                <td class="text-center">${item.count || 0}</td>
+            </tr>
+        `;
+        });
+
+        detailsHtml += `
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td class="text-end"><strong>Rs. ${data.total?.toFixed(2) || '0.00'}</strong></td>
+                        <td class="text-end"><strong>100%</strong></td>
+                        <td class="text-center"><strong>${data.details.reduce((sum, item) => sum + (item.count || 0), 0)}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    `;
+
+        detailsContainer.innerHTML = detailsHtml;
     }
-}*/
+
+    function getCategoryColor(categoryName, index) {
+        const colors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+            '#9966FF', '#FF9F40', '#8AC926', '#1982C4',
+            '#6A4C93', '#F15BB5', '#00BBF9', '#00F5D4'
+        ];
+        return colors[index % colors.length];
+    }
 </script>
 
 @endpush

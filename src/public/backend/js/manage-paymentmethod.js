@@ -14,7 +14,7 @@ $(function () {
         }
 
         table = $('#datatable').DataTable({
-            processing: true,
+            processing: false,
             serverSide: true,
             responsive: true,
             searching: true,
@@ -25,7 +25,7 @@ $(function () {
                 url: url,
                 type: "GET",
 
-                // 🔥 FIX: The 'data' function MUST be inside the 'ajax' object
+                // FIX: The 'data' function MUST be inside the 'ajax' object
                 data: function (d) {
                     // Calculate the page number: (offset / limit) + 1
                     var page = (d.start / d.length) + 1;
@@ -46,6 +46,29 @@ $(function () {
                     // Your backend is now sending the correct format, 
                     // so this function is correct for extracting the data array.
                     return json.data || [];
+                },error: function (xhr) {
+                    hideTableLoader();
+                    let message = 'Something went wrong. Please try again.';
+
+                    if (xhr.status === 401) {
+                        message = 'You are not authenticated. Please log in again.';
+                    }
+
+                    if (xhr.status === 403) {
+                        message = 'You are not authorized to view this data.';
+                    }
+
+                    if (xhr.status === 422) {
+                        message = 'Validation error occurred.';
+                    }
+
+                    if (xhr.responseJSON?.message) {
+                        console.log('here')
+
+                        message = xhr.responseJSON.message;
+                    }
+
+                    showAlert(message);
                 }
             },
 
@@ -69,7 +92,7 @@ $(function () {
             }
         });
 
-        // 🔥 Add loader inside table rows
+        // Add loader inside table rows
         table.on('processing.dt', function (e, settings, processing) {
             if (processing) {
                 showTableLoader();
@@ -114,22 +137,5 @@ $(function () {
 
         // Return the generated HTML (will be empty if user has no permissions)
         return buttonsHtml.trim();
-    }
-
-    function showTableLoader() {
-        const colspan = $('#datatable thead th').length;
-
-        $('#datatable tbody').html(`
-            <tr class="table-loading-row">
-                <td colspan="${colspan}">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <span class="ms-2">Loading...</span>
-                </td>
-            </tr>
-        `);
-    }
-
-    function hideTableLoader() {
-        // DataTables will repopulate rows automatically, so nothing needed here
     }
 });
