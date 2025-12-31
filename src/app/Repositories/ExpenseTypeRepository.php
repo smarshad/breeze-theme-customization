@@ -19,7 +19,8 @@ class ExpenseTypeRepository implements ExpenseTypeRepositoryInterface
     public function getPaginated(
         int $perPage = 15,
         array $columns = ['*'],
-        ?int $userId = null
+        ?int $userId = null,
+        ?string $search = NULL
     ): LengthAwarePaginator {
 
         $query = $this->model->query();
@@ -28,7 +29,12 @@ class ExpenseTypeRepository implements ExpenseTypeRepositoryInterface
             $query->where('created_by', $userId);
         }
 
-
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
         // $sql = vsprintf(
         //     str_replace('?', '%s', $query->toSql()),
         //     collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()

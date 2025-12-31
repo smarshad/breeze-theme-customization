@@ -11,9 +11,27 @@ class RoleRepository implements RoleRepositoryInterface
 
     public function __construct(protected Role $model) {}
 
-    public function getPaginated(?int $perPage = null, array $columns = ['*']): LengthAwarePaginator
-    {
-        return $this->model->with('permissions')->withCount('permissions')->paginate(
+    public function getPaginated(
+        ?int $perPage = null,
+        array $columns = ['*'],
+        ?string $search = null
+    ): LengthAwarePaginator {
+
+        $query = $this->model
+            ->with('permissions')
+            ->withCount('permissions');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('permissions', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        return $query->paginate(
             $perPage ?? config('pagination.default'),
             $columns
         );
@@ -22,9 +40,9 @@ class RoleRepository implements RoleRepositoryInterface
     /**
      * Create a new Role.
      */
-    public function createRole(array $data):Role
+    public function createRole(array $data): Role
     {
-        logAction('RoleRepository','info',$data);
+        logAction('RoleRepository', 'info', $data);
         return $this->model->create($data);
     }
 }

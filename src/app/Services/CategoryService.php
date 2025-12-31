@@ -16,7 +16,7 @@ class CategoryService
         protected CategoryRepositoryInterface $categoryRepository
     ) {}
 
-    public function getCategoriesPaginated(User $user, int $perPage = 15): LengthAwarePaginator
+    public function getCategoriesPaginated(User $user, ?int $perPage = 15,  ?string $search = null): LengthAwarePaginator
     {
         $userId = null; // Default: view all
 
@@ -32,7 +32,7 @@ class CategoryService
         // Business logic: e.g., apply global filters based on user context
         // Explicitly passing ['*'] for columns to prevent the reported TypeError,
         // even though it has a default value in the repository.
-        return $this->categoryRepository->getPaginated($perPage, ['*'], $userId);
+        return $this->categoryRepository->getPaginated($perPage, ['*'], $userId, $search);
     }
 
     public function getCategoryById(int $categoryId): Category

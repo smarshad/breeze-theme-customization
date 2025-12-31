@@ -43,8 +43,9 @@ class CategoryController extends Controller
         }
 
         $perPage            = $request->get('per_page', 5);
-        $categories         = $this->categoryService->getCategoriesPaginated($user, $perPage);
         $draw               = $request->get('draw', 1);
+        $search             = $request->get('search');
+        $categories         = $this->categoryService->getCategoriesPaginated($user, $perPage, $search);
         $response           = CategoryResource::collection($categories)->response()->getData(true);
         $response['draw']   = (int) $draw;
         $response['recordsTotal'] = $response['meta']['total'];

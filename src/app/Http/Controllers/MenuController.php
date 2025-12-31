@@ -49,8 +49,9 @@ class MenuController extends BaseController
 
         try {
             $perPage            = $request->get('per_page', NULL);
-            $data               = $this->menuService->getPaginated($user, $perPage);
             $draw               = $request->get('draw', 1);
+            $search             = $request->get('search');
+            $data               = $this->menuService->getPaginated($user, $perPage, $search);
             $response           = MenuResource::collection($data)->response()->getData(true);
             $response['draw']   = (int) $draw;
             $response['recordsTotal'] = $response['meta']['total'];

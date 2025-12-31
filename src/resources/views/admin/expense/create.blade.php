@@ -14,9 +14,7 @@ $formAction = $isEdit ? route('expense.update', $expense->id) : route('expense.s
 $pageTitle = $isEdit ? __('expense.edit_title') : __('expense.create_title');
 $breadcrumbActive = $isEdit ? 'Edit' : 'New';
 $buttonText = $isEdit ? __('global.update') : __('global.save');
-$canSubmit = $isEdit
-        ? Gate::allows('update', $expense)
-        : Gate::allows('create', App\Models\Expense::class);
+$canSubmit = $isEdit ? Gate::allows('update', $expense) : Gate::allows('create', App\Models\Expense::class);
 @endphp
 
 @section('content')

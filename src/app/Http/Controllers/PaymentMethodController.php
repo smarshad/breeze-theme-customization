@@ -49,8 +49,9 @@ class PaymentMethodController extends BaseController
             abort(401, 'Unauthenticated.');
         }
         $perPage            = $request->get('per_page', NULL);
-        $data               = $this->service->getPaginated($user, $perPage);
         $draw               = $request->get('draw', 1);
+        $search             = $request->get('search');
+        $data               = $this->service->getPaginated($user, $perPage, $search);
         $response           = PaymentMethodResource::collection($data)->response()->getData(true);
         $response['draw']   = (int) $draw;
         $response['recordsTotal'] = $response['meta']['total'];

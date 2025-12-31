@@ -51,8 +51,9 @@ class PermissionController extends BaseController
 
         try {
             $perPage            = $request->get('per_page', NULL);
-            $data               = $this->permissionService->getPaginated($perPage);
             $draw               = $request->get('draw', 1);
+            $search             = $request->get('search');
+            $data               = $this->permissionService->getPaginated($perPage, $search);
             $response           = PermissionResource::collection($data)->response()->getData(true);
             $response['draw']   = (int) $draw;
             $response['recordsTotal'] = $response['meta']['total'];

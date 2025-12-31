@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Interfaces\UserRepositoryInterface;
@@ -13,12 +14,29 @@ class UserRepository implements UserRepositoryInterface
         return User::all();
     }
 
-    public function paginate(int $perPage = 15, ?int $createdBy = null): LengthAwarePaginator
-    {
-        return User::when(
-            $createdBy,
-            fn ($q) => $q->where('created_by', $createdBy)
-        )->latest()->paginate($perPage);
+    public function paginate(
+        int $perPage = 15,
+        ?int $createdBy = null,
+        ?string $search = null
+    ): LengthAwarePaginator {
+
+        $query = User::query();
+
+        $query->when($createdBy, function ($q) use ($createdBy) {
+            $q->where('created_by', $createdBy);
+        });
+
+        $query->when($search, function ($q) use ($search) {
+            $q->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('mobile_no', 'like', "%{$search}%");
+            });
+        });
+
+        return $query
+            ->latest()
+            ->paginate($perPage);
     }
 
     public function findOrFail(int $id): User

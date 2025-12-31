@@ -16,9 +16,9 @@ class RoleService
         protected RoleRepositoryInterface $roleRepository
     ) {}
 
-    public function getPaginated(?int $perPage = null): LengthAwarePaginator
+    public function getPaginated(?int $perPage = null, ?string $search = NULL): LengthAwarePaginator
     {
-        return $this->roleRepository->getPaginated($perPage, ['*']);
+        return $this->roleRepository->getPaginated($perPage, ['*'], $search);
     }
 
     public function createRole(RoleDTO $dto): Role

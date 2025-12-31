@@ -56,8 +56,9 @@ class RoleController extends BaseController
 
         try {
             $perPage            = $request->get('per_page', NULL);
-            $data               = $this->roleService->getPaginated($perPage);
             $draw               = $request->get('draw', 1);
+            $search             = $request->get('search');
+            $data               = $this->roleService->getPaginated($perPage, $search);
             $response           = RoleResource::collection($data)->response()->getData(true);
             $response['draw']   = (int) $draw;
             $response['recordsTotal'] = $response['meta']['total'];

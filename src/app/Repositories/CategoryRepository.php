@@ -14,20 +14,8 @@ class CategoryRepository implements CategoryRepositoryInterface
         return Category::all();
     }
 
-    public function getPaginated(int $perPage = 15, array $columns = ['*'], ?int $userId = null): LengthAwarePaginator
+    public function getPaginated(int $perPage = 15, array $columns = ['*'], ?int $userId = null, ?string $search = NULL): LengthAwarePaginator
     {
-        // Advanced: We can add complex filtering/sorting logic here
-        /*
-         * $query = Category::query();
-
-            $sql = vsprintf(
-                str_replace('?', '%s', $query->toSql()),
-                collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()
-            );
-
-            \Log::info($sql);
-         */
-        // return Category::query()->paginate($perPage, $columns);
 
         $query = Category::query();
 
@@ -35,6 +23,22 @@ class CategoryRepository implements CategoryRepositoryInterface
             // Filter categories by the user who created them
             $query->where('created_by', $userId);
         }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('color_code', 'like', "%{$search}%");
+            });
+        }
+        
+        // $sql = vsprintf(
+        //     str_replace('?', '%s', $query->toSql()),
+        //     collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()
+        // );
+
+        // \Log::info($sql);
 
         // Advanced: We can add complex filtering/sorting logic here
         return $query->paginate($perPage, $columns);
@@ -62,4 +66,5 @@ class CategoryRepository implements CategoryRepositoryInterface
     {
         return $this->findById($categoryId)->delete();
     }
+
 }

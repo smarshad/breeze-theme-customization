@@ -18,7 +18,7 @@ interface PaymentMethodRepositoryInterface
      * Retrieve records with pagination
      */
 
-    public function getPaginated(?int $perPage = null, array $column = ['*'], ?int $userId = null): LengthAwarePaginator;
+    public function getPaginated(?int $perPage = null, array $column = ['*'], ?int $userId = null, ?string $search = NULL): LengthAwarePaginator;
 
     /**
      * Create new Record

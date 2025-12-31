@@ -17,11 +17,18 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
         return $this->model->all();
     }
 
-    public function getPaginated(?int $perPage = null, array $columns = ['*'], ?int $userId = null): LengthAwarePaginator
+    public function getPaginated(?int $perPage = null, array $columns = ['*'], ?int $userId = null, ?string $search = null): LengthAwarePaginator
     {
         $query = $this->model->with('creator');
         if ($userId !== null) {
             $query->where('created_by', $userId);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+            });
         }
 
         return $query->paginate(

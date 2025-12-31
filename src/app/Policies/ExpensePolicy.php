@@ -14,6 +14,15 @@ class ExpensePolicy
             || $user->can('expense.view.own');
     }
 
+    public function create(User $user): Response
+    {
+        // Example logic: only 'admin' or 'editor' can create
+        if ($user->can('expense.create')) {
+            return Response::allow();
+        }
+        return Response::deny('You must be an Administrator or Editor to create a expense.');
+    }
+
     public function delete(User $user, Expense $expense): Response
     {
         // 1. Check for the global 'delete.all' permission.

@@ -16,7 +16,7 @@ class UserService
         private UserRepositoryInterface $users
     ) {}
 
-    public function paginateForUser(User $authUser, int $perPage): LengthAwarePaginator
+    public function paginateForUser(User $authUser, int $perPage, ?string $search = null): LengthAwarePaginator
     {
         $createdBy = null;
 
@@ -28,7 +28,7 @@ class UserService
             $createdBy = $authUser->id;
         }
 
-        return $this->users->paginate($perPage, $createdBy);
+        return $this->users->paginate($perPage, $createdBy, $search);
     }
 
     public function create(UserDTO $dto): User

@@ -28,9 +28,9 @@ class PermissionService
         return Permission::all();
     }
 
-    public function getPaginated(?int $perPage = null): LengthAwarePaginator
+    public function getPaginated(?int $perPage = null, ?string $search = null): LengthAwarePaginator
     {
-        return $this->permission_repository_interface->getPaginated($perPage, ['*']);
+        return $this->permission_repository_interface->getPaginated($perPage, ['*'], $search);
     }
 
     /**

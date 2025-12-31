@@ -22,7 +22,7 @@ class PaymentMethodService
     /**
      * Retrieves paginatedpayment methods.
      */
-    public function getPaginated(User $user, ?int $perPage = null): LengthAwarePaginator
+    public function getPaginated(User $user, ?int $perPage = null, ?string $search = null): LengthAwarePaginator
     {
 
         $userId = null; // Default: view all
@@ -34,7 +34,7 @@ class PaymentMethodService
             $userId = $user->id;
         }
         // Caching is typically not used for paginated results unless the query is very expensive and static.
-        return $this->paymentMethodRepository->getPaginated($perPage, ['*'], $userId);
+        return $this->paymentMethodRepository->getPaginated($perPage, ['*'], $userId, $search);
     }
 
     /**

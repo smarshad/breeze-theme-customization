@@ -24,10 +24,11 @@ class UserController extends BaseController
     public function list(Request $request): JsonResponse
     {
         $this->authorize('viewAny', User::class);
-
+        $search = $request->get('search');
         $users = $this->service->paginateForUser(
             Auth::user(),
-            (int) $request->get('per_page', 10)
+            (int) $request->get('per_page', 10),
+            $search
         );
 
         return UserResource::collection($users)

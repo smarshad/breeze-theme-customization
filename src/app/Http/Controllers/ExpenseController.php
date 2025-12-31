@@ -49,8 +49,9 @@ class ExpenseController extends BaseController
         }
 
         $perPage            = $request->get('per_page', 5);
-        $categories         = $this->service->getPaginated($user, $perPage);
+        $search             = $request->get('search');
         $draw               = $request->get('draw', 1);
+        $categories         = $this->service->getPaginated($user, $perPage, $search);
         $response           = ExpenseResource::collection($categories)->response()->getData(true);
         $response['draw']   = (int) $draw;
         $response['recordsTotal'] = $response['meta']['total'];

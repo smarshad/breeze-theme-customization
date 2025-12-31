@@ -22,14 +22,36 @@ class ExpenseRepository implements ExpenseRepositoryInterface
         return $this->model->create($data);
     }
 
-    public function getPaginated(int $perPage = 15, array $columns = ['*'], ?int $userId = null): LengthAwarePaginator {
+    public function getPaginated(int $perPage = 15, array $columns = ['*'], ?int $userId = null, ?string $search = null): LengthAwarePaginator {
         $query = $this->model
             ->with(['creator', 'category', 'paymentMethod', 'expenseType']);
     
         if ($userId !== null) {
             $query->where('created_by', $userId);
         }
-    
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhere('amount', 'like', "%{$search}%")
+                  ->orWhereHas('category', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('paymentMethod', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('expenseType', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $sql = vsprintf(
+            str_replace('?', '%s', $query->toSql()),
+            collect($query->getBindings())->map(fn($b) => "'$b'")->toArray()
+        );
+
+        \Log::info($sql);
         return $query->paginate($perPage, $columns);
     }
     

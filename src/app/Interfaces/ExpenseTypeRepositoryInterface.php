@@ -16,7 +16,7 @@ interface ExpenseTypeRepositoryInterface
     /**
      * Retrieve records with pagination.
      */
-    public function getPaginated(int $perPage = 15, array $columns = ['*'], ?int $userId = null): LengthAwarePaginator;
+    public function getPaginated(int $perPage = 15, array $columns = ['*'], ?int $userId = null, ?string $search = NULL): LengthAwarePaginator;
 
     /**
      * Find a record by its ID.

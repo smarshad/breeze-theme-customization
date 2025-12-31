@@ -12,5 +12,5 @@ interface PermissionRepositoryInterface
      * Retrieve records with pagination
      */
 
-    public function getPaginated(?int $perPage = null, array $column = ['*']): LengthAwarePaginator;
+    public function getPaginated(?int $perPage = null, array $column = ['*'], ?string $search = NULL): LengthAwarePaginator;
 }

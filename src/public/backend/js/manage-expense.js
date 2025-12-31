@@ -33,7 +33,8 @@ $(function () {
                     // Map DataTables parameters to Laravel's expected parameters
                     d.page = page;
                     d.per_page = d.length;
-
+                    // FIX: extract search string properly
+                    d.search = d.search?.value ?? null;
                     // Clean up DataTables' default parameters
                     delete d.start;
                     delete d.length;

@@ -22,7 +22,7 @@ class ExpenseTypeService
     /**
      * Retrieves paginated expense types.
      */
-    public function getExpenseTypePaginated(User $user, int $perPage = 15): LengthAwarePaginator
+    public function getExpenseTypePaginated(User $user, ?int $perPage = 15, ?string $search= NULL): LengthAwarePaginator
     {
         $userId = null; // Default: view all
 
@@ -39,7 +39,7 @@ class ExpenseTypeService
         // Explicitly passing ['*'] for columns to prevent the reported TypeError,
         // even though it has a default value in the repository.
         // Caching is typically not used for paginated results unless the query is very expensive and static.
-        return $this->expenseTypeRepository->getPaginated($perPage, ['*'], $userId);
+        return $this->expenseTypeRepository->getPaginated($perPage, ['*'], $userId, $search);
     }
 
     /**

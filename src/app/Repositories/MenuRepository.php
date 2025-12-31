@@ -36,14 +36,26 @@ class MenuRepository implements MenuRepositoryInterface
     public function getPaginated(
         ?int $perPage = null,
         array $columns = ['*'],
-        ?int $userId = null
+        ?int $userId = null,
+        ?string $search= NULL
     ): LengthAwarePaginator {
         $query = $this->model
             ->with(['parent', 'children', 'permission', 'creator']);
         if ($userId !== null) {
             $query->where('created_by', $userId);
         }
-
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('route', 'like', "%{$search}%")
+                  ->orWhereHas('parent', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('permission', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
 
         // $sql = vsprintf(
         //     str_replace('?', '%s', $query->toSql()),

@@ -19,7 +19,7 @@ class ExpenseService
 
     public function __construct(protected ExpenseRepository $expenseRepository) {}
 
-    public function getPaginated(User $user, ?int $perPage = null): LengthAwarePaginator
+    public function getPaginated(User $user, ?int $perPage = null, ?string $search = null): LengthAwarePaginator
     {
         $userId = null; // Default: view all
 
@@ -30,7 +30,7 @@ class ExpenseService
             // If only 'view own' is granted, filter by the user's ID
             $userId = $user->id;
         }
-        return $this->expenseRepository->getPaginated($perPage, ['*'], $userId);
+        return $this->expenseRepository->getPaginated($perPage, ['*'], $userId, $search);
     }
 
     public function create(ExpenseDTO $expenseDTO): Expense
@@ -50,14 +50,15 @@ class ExpenseService
         });
     }
 
-    public function delete(int $id):bool{
+    public function delete(int $id): bool
+    {
 
         $delete = $this->expenseRepository->delete($id);
 
-        if(!$delete){
+        if (!$delete) {
             throw new DomainException('The repository failed to delete the payment method.');
         }
-        
+
         return true;
-     }
+    }
 }
