@@ -11,9 +11,11 @@ use App\Interfaces\MenuRepositoryInterface;
 use App\Interfaces\PermissionRepositoryInterface;
 use App\Interfaces\RoleRepositoryInterface;
 use App\Interfaces\UserRepositoryInterface;
+use App\Interfaces\BackupRepositoryInterface;
 use App\Models\Permission;
 use App\Models\User;
 use App\Observers\PermissionObserver;
+use App\Repositories\BackupRepository;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ExpenseTypeRepository;
 use App\Repositories\PaymentMethodRepository;
@@ -68,6 +70,11 @@ class AppServiceProvider extends ServiceProvider
             UserRepositoryInterface::class,
             UserRepository::class
         );
+        $this->app->bind(
+            BackupRepositoryInterface::class,
+            BackupRepository::class
+        );
+        
     }
 
     /**

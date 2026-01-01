@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\LockScreenController;
 use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 use App\Http\Controllers\Account\PasswordController;
+use App\Http\Controllers\Admin\DatabaseBackupController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseTypeController;
@@ -30,7 +31,7 @@ Route::middleware(['auth', 'locked', 'verified'])->prefix('auth')->group(functio
     Route::get('/dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
 });
 
-Route::middleware(['auth','locked'])->group(function () {
+Route::middleware(['auth', 'locked'])->group(function () {
     Route::prefix('dashboard')->group(function () {
         Route::get('summary', [DashboardController::class, 'summary']);
         Route::get('day-wise', [DashboardController::class, 'dayWise']);
@@ -53,6 +54,11 @@ Route::middleware(['auth','locked'])->group(function () {
         Route::get('export-pdf', [ReportsController::class, 'exportPdf']);
         Route::get('export-excel', [ReportsController::class, 'exportExcel']);
     });
+
+    Route::get('/admin/db-backup', [DatabaseBackupController::class, 'index'])->name('db.backup');
+    Route::post('/db-backup', [DatabaseBackupController::class, 'store'])->name('db.backup.store');
+    Route::get('/db-backup/download/{file}', [DatabaseBackupController::class, 'download'])->name('db.backup.download');
+    
 });
 
 

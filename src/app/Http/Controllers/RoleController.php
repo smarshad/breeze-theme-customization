@@ -176,7 +176,7 @@ class RoleController extends BaseController
             if ($request->has('permissions')) {
                 $permissions = Permission::whereIn('id', $validated['permissions'])->get();
                 $role->syncPermissions($permissions);
-                logAction('Role Updated update permission', 'info', ['permission_names' => $permissions->pluck('name')->toArray()]);
+                // logAction('Role Updated update permission', 'info', ['permission_names' => $permissions->pluck('name')->toArray()]);
             }
 
             DB::commit();
