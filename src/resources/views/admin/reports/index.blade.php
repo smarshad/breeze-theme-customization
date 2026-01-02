@@ -130,19 +130,19 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#profile-b1" data-toggle="tab" aria-expanded="false" class="nav-link">
+                            <a href="#categoryTab" data-toggle="tab" aria-expanded="false" class="nav-link">
                                 <span class="d-block d-sm-none"><i class="fas fa-folder"></i></span>
                                 <span class="d-none d-sm-block"><i class="fas fa-folder"></i> By Category</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#messages-b1" data-toggle="tab" aria-expanded="false" class="nav-link">
+                            <a href="#paymentTab" data-toggle="tab" aria-expanded="false" class="nav-link">
                                 <span class="d-block d-sm-none"><i class="fas fa-credit-card"></i></span>
                                 <span class="d-none d-sm-block"><i class="fas fa-credit-card"></i> By Payment Method</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#settings-b1" data-toggle="tab" aria-expanded="false" class="nav-link">
+                            <a href="#monthlyTab" data-toggle="tab" aria-expanded="false" class="nav-link">
                                 <span class="d-block d-sm-none"><i class="fas fa-calendar"></i></span>
                                 <span class="d-none d-sm-block"><i class="fas fa-calendar"></i> Monthly Summary</span>
                             </a>
@@ -219,7 +219,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane" id="profile-b1">
+                        <div class="tab-pane" id="categoryTab">
                             <div class="card-body">
                                 <h5 class="mb-3">Expenses by Category</h5>
                                 <div class="table-responsive">
@@ -261,7 +261,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane" id="messages-b1">
+                        <div class="tab-pane" id="paymentTab">
                             <div class="card-body">
                                 <h5 class="mb-3">Expenses by Payment Method</h5>
                                 <div class="table-responsive">
@@ -302,7 +302,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane" id="settings-b1">
+                        <div class="tab-pane" id="monthlyTab">
                             <div class="card-body">
                                 <h5 class="mb-3">Monthly Summary</h5>
                                 <div class="table-responsive">
@@ -444,6 +444,8 @@
     @endpush
 
     @push('scripts')
+    <script src="{{asset('backend/js/common-crud.js')}}"></script>
+
     <script>
         let currentFilters = {};
 
