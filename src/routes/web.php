@@ -28,6 +28,7 @@ Route::get('/logs', [LogViewerController::class, 'index'])->name('logs');
 Route::middleware(['auth', 'locked', 'verified'])->prefix('auth')->group(function () {
     Route::get('/dashboard1', [DashboardController::class, 'dashboard1'])->name('dashboard1');
     Route::get('/dashboard2', [DashboardController::class, 'dashboard2'])->name('dashboard2');
+    Route::get('/new-dashboard', [DashboardController::class, 'dashboard3'])->name('dashboard3');
     Route::get('/dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
 });
 
@@ -35,6 +36,7 @@ Route::middleware(['auth', 'locked'])->group(function () {
     Route::prefix('dashboard')->group(function () {
         Route::get('summary', [DashboardController::class, 'summary']);
         Route::get('day-wise', [DashboardController::class, 'dayWise']);
+        Route::get('day-wise-category', [DashboardController::class, 'dayWiseWithCategory']);
         Route::get('category-wise', [DashboardController::class, 'categoryWise']);
         Route::get('monthly-trend', [DashboardController::class, 'monthlyTrend']);
         Route::get('payment-method-wise', [DashboardController::class, 'paymentMethodWise']);

@@ -2,6 +2,11 @@
 @push('styles')
 <!-- C3 Chart css -->
 <link href="{{asset('backend/libs/c3/c3.min.css')}}" rel="stylesheet" type="text/css" />
+<style>
+    .float-right {
+        float: right;
+    }
+</style>
 @endpush
 <!-- Begin page -->
 @section('content')
@@ -53,8 +58,6 @@
         <!-- end page title -->
 
         <div class="row">
-
-
             <div class="col-xl-3 col-sm-6">
                 <div class="card-box widget-box-two widget-two-custom">
                     <div class="media">
@@ -126,47 +129,89 @@
         <!-- end row -->
 
         <div class="row">
-            <div class="col-xl-6">
+            <div class="col-6">
                 <div class="card-box">
-                    <h4 class="header-title mb-4">Revenue Comparison</h4>
+                    <h4 class="header-title mb-3">Daily Breakdown <small id="dailyTotal" class="float-right">0</small></h4>
+                    <!-- <div class="text-center">
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="mt-3 mb-3">
+                                    <h3 class="mb-2">2563</h3>
+                                    <p class="text-uppercase mb-1 font-13 font-weight-normal">Lifetime total sales</p>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="mt-3 mb-3">
+                                    <h3 class="mb-2">6952</h3>
+                                    <p class="text-uppercase mb-1 font-13 font-weight-normal">Income amounts</p>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="mt-3 mb-3">
+                                    <h3 class="mb-2">1125</h3>
+                                    <p class="text-uppercase mb-1 font-13 font-weight-normal">Total visits</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div id="daily-chart" style="height: 310px;" class="morris-charts"></div>
+                </div>
+            </div><!-- end col -->
+            <div class="col-6">
+                <div class="card-box">
+                    <h4 class="header-title mb-3">Daily Category Wise Expense <small id="dailyCatTotal" class="float-right"></small></h4>
+                    <canvas id="dailyExpenseChart" style="height: 310px;" class="morris-charts"></canvas>
+                </div>
+            </div><!-- end col -->
+        </div>
 
-                    <div class="text-center">
-                        <h5 class="font-weight-normal text-muted">You have to pay</h5>
-                        <h3 class="mb-3"><i class="mdi mdi-arrow-up-bold-hexagon-outline text-success"></i> 25643 <small>USD</small></h3>
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-credit-card"></i> Payment Methods
+                        </h5>
                     </div>
-
-                    <div class="chart-container" dir="ltr">
-                        <div class="" style="height:280px" id="platform_type_dates_donut"></div>
+                    <div class="card-body">
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="paymentChart"></canvas>
+                        </div>
+                        <div id="paymentDetails" class="mt-3"></div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-xl-6">
-                <div class="card-box">
-                    <h4 class="header-title mb-4">Visitors Overview</h4>
-
-                    <div class="text-center">
-                        <h5 class="font-weight-normal text-muted">You have to pay</h5>
-                        <h3 class="mb-3"><i class="mdi mdi-arrow-down-bold-hexagon-outline text-danger"></i> 5623 <small>USD</small></h3>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-credit-card"></i> Expense Type
+                        </h5>
                     </div>
+                    <div class="card-body">
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                        <div id="typeDetails" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card-box" id="categoryDetailsContainer">
+                    <!-- <h4 class="header-title">Recent Users</h4> -->
+                </div>
+            </div>
+        </div>
+        <div class="row">
 
+            <div class="col-xl-12">
+                <div class="card-box">
+                    <h4 class="header-title mb-4">Expenses by Category</h4>
                     <div class="chart-container" dir="ltr">
                         <div class="" style="height:280px" id="categoryChart"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4">
-                <div class="card-box">
-                    <h4 class="header-title mb-4">Goal Completion</h4>
-
-                    <div class="text-center">
-                        <h5 class="font-weight-normal text-muted">You have to pay</h5>
-                        <h3 class="mb-3"><i class="mdi mdi-arrow-up-bold-hexagon-outline text-success"></i> 12548 <small>USD</small></h3>
-                    </div>
-
-                    <div class="chart-container" dir="ltr">
-                        <div class="chart has-fixed-height" style="height:280px" id="page_views_today"></div>
+                        <div id="categoryDetails" class="mt-3"></div>
                     </div>
                 </div>
             </div>
@@ -403,11 +448,12 @@
 <!--C3 Chart-->
 <script src="{{asset('backend/libs/d3/d3.min.js')}}"></script>
 <script src="{{asset('backend/libs/c3/c3.min.js')}}"></script>
-
 <script src="{{asset('backend/libs/echarts/echarts.min.js')}}"></script>
 
 <script src="{{asset('backend/js/pages/dashboard.init.js')}}"></script>
-<!-- <script src="{{asset('backend/js/dashboard.js')}}"></script> -->
+<script src="{{asset('backend/libs/morris-js/morris.min.js')}}"></script>
+<script src="{{asset('backend/libs/raphael/raphael.min.js')}}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     // Chart instances
@@ -423,10 +469,17 @@
         Promise.all([
             fetch(`/dashboard/summary?period=${currentPeriod}`).then(r => r.json()),
             fetch(`/dashboard/category-wise?period=${currentPeriod}`).then(r => r.json()),
-        ]).then(([summary, category]) => {
+            fetch(`/dashboard/day-wise?period=${currentPeriod}`).then(r => r.json()),
+            fetch(`/dashboard/day-wise-category?period=${currentPeriod}`).then(r => r.json()),
+            fetch(`/dashboard/payment-method-wise?period=${currentPeriod}`).then(r => r.json()),
+            fetch(`/dashboard/expense-type-wise?period=${currentPeriod}`).then(r => r.json()),
+        ]).then(([summary, category, dayWise, dayWiseWithCategory, paymentMethod, expenseType]) => {
             updateSummaryCards(summary.data);
             updateCategoryChart(category.data);
-
+            updateDailyChart(dayWise.data);
+            renderDailyExpenseChart(dayWiseWithCategory.data, dayWiseWithCategory.total);
+            updatePaymentChart(paymentMethod.data);
+            updateTypeChart(expenseType.data);
         })
     }
 
@@ -568,12 +621,43 @@
         charts.category = chart;
 
         // Update details
-        // updateCategoryDetails(data);
+        updateCategoryDetails(data);
+
+
+
+        const dataItems = data.details;
+        let detailsHtml = '';
+
+        const columnsPerRow = 6; // 6 columns max per row
+
+        for (let start = 0; start < dataItems.length; start += columnsPerRow) {
+            const rowChunk = dataItems.slice(start, start + columnsPerRow);
+
+            detailsHtml += '<div class="row">';
+
+            rowChunk.forEach(item => {
+                detailsHtml += `
+            <div class="col-md-2 col-sm-6">
+                <div class="card">
+                    <div class="card-body p-2 text-center">
+                        <strong>${item.category}</strong>
+                        <hr />
+                        Rs. ${item.amount.toLocaleString('en-IN')} / 
+                        <b>(<span>${item.percentage}%</span>)</b>
+                    </div>
+                </div>
+            </div>
+        `;
+            });
+
+            detailsHtml += '</div>'; // End row
+        }
+
+        document.getElementById('categoryDetails').innerHTML = detailsHtml;
     }
 
     function updateCategoryDetails(data) {
-        const detailsContainer = document.getElementById('categoryDetailsContainer') ||
-            document.getElementById('categoryDetails');
+        const detailsContainer = document.getElementById('categoryDetailsContainer');
 
         if (!detailsContainer) {
             console.warn('Details container not found');
@@ -585,7 +669,7 @@
             return;
         }
 
-        let detailsHtml = `
+        let detailsHtml = `<h3 class="mb-3"> Latest Category Expense</h4>
         <div class="table-responsive">
             <table class="table table-sm table-hover mb-0">
                 <thead>
@@ -651,6 +735,186 @@
             '#6A4C93', '#F15BB5', '#00BBF9', '#00F5D4'
         ];
         return colors[index % colors.length];
+    }
+
+    var dailyChart;
+
+    dailyChart = Morris.Bar({
+        element: 'daily-chart',
+        data: [],
+        xkey: 'y',
+        ykeys: ['expenses'],
+        labels: ['Daily Expenses'],
+        barColors: ['#6ad9c3'],
+        resize: true,
+        hideHover: 'auto'
+    });
+
+    function updateDailyChart(apiResponse) {
+
+        var morrisData = apiResponse.labels.map((label, index) => {
+            return {
+                y: label.replace("Day ", ""),
+                expenses: apiResponse.datasets[0].data[index]
+            };
+        });
+        dailyChart.setData(morrisData);
+        $('#dailyTotal').html(`<b>(Total : ${apiResponse.total}, Average : ${apiResponse.average}) <b>`)
+    }
+
+    let dailyExpenseChart;
+
+    function renderDailyExpenseChart(apiData, total) {
+
+        const ctx = document.getElementById('dailyExpenseChart').getContext('2d');
+
+        if (dailyExpenseChart) {
+            dailyExpenseChart.destroy();
+        }
+
+        const xAxisLabels = addDailyTotals(apiData);
+
+        dailyExpenseChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: xAxisLabels,
+                datasets: apiData.datasets
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            font: ctx => ({
+                                size: ctx.index === 1 ? 11 : 12
+                            })
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                if (ctx.raw === 0) return null;
+                                return `${ctx.dataset.label}: ₹${ctx.raw.toLocaleString()}`;
+                            },
+                            footer: function(items) {
+                                const total = items.reduce((sum, i) => sum + i.raw, 0);
+                                return `Total: ₹${total.toLocaleString()}`;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        $("#dailyCatTotal").html(`<b>(Rs. ${total})</b>`)
+    }
+
+    function addDailyTotals(apiData) {
+
+        const totals = apiData.labels.map((_, index) => {
+            return apiData.datasets.reduce((sum, ds) => {
+                return sum + (ds.data[index] || 0);
+            }, 0);
+        });
+
+        return apiData.labels.map((date, index) => ([
+            date,
+            `Rs. ${totals[index].toLocaleString()}`
+        ]));
+    }
+
+    function updatePaymentChart(data) {
+        const ctx = document.getElementById('paymentChart').getContext('2d');
+
+        if (charts.payment) {
+            charts.payment.destroy();
+        }
+
+        charts.payment = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Update details
+        let detailsHtml = '';
+        data.details.forEach(item => {
+            detailsHtml += `
+                <div class="detail-item">
+                    <span class="detail-label">${item.method}</span>
+                    <span class="detail-value">
+                        Rs. ${item.amount.toFixed(2)}
+                        <span class="detail-percentage">${item.percentage}%</span>
+                    </span>
+                </div>
+            `;
+        });
+        document.getElementById('paymentDetails').innerHTML = detailsHtml;
+    }
+
+    function updateTypeChart(data) {
+        const ctx = document.getElementById('typeChart').getContext('2d');
+
+        if (charts.type) {
+            charts.type.destroy();
+        }
+
+        charts.type = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Update details
+        let detailsHtml = '';
+        data.details.forEach(item => {
+            detailsHtml += `
+                <div class="detail-item">
+                    <span class="detail-label">${item.type}</span>
+                    <span class="detail-value">
+                        Rs. ${item.amount.toFixed(2)}
+                        <span class="detail-percentage">${item.percentage}%</span>
+                    </span>
+                </div>
+            `;
+        });
+        document.getElementById('typeDetails').innerHTML = detailsHtml;
     }
 </script>
 

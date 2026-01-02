@@ -20,6 +20,12 @@ class DashboardController extends Controller
         return view('admin.dashboard1', compact('bodyCss'));
     }
 
+    public function dashboard3()
+    {
+        $bodyCss = getAuthPageCss();
+        return view('admin.dashboard1-new', compact('bodyCss'));
+    }
+
     public function dashboard2()
     {
         $bodyCss = getAuthPageCss();
@@ -150,7 +156,8 @@ class DashboardController extends Controller
             $totalAmount = 0;
 
             foreach ($expenses as $expense) {
-                $labels[] = 'Day ' . $expense->day;
+                // $labels[] = 'Day ' . $expense->day;
+                $labels[] = $expense->date;
                 $data[] = (float) $expense->total;
                 $totalAmount += $expense->total;
             }
@@ -858,6 +865,85 @@ class DashboardController extends Controller
             default => 'This Month'
         };
     }
+
+    public function dayWiseWithCategory(Request $request): JsonResponse
+    {
+        try {
+            $period = $request->query('period', 'month');
+            $userId = auth()->id();
+
+            [$startDate, $endDate] = $this->getDateRange($period, $request);
+
+            $expenses = Expense::select(
+                DB::raw('DATE(expenses.expense_date) as date'),
+                'categories.name as category',
+                DB::raw('SUM(expenses.amount) as total')
+            )
+                ->join('categories', 'expenses.category_id', '=', 'categories.id')
+                ->where('expenses.created_by', $userId)
+                ->whereNull('expenses.deleted_at')
+                ->whereNull('categories.deleted_at')
+                ->whereBetween('expenses.expense_date', [$startDate, $endDate])
+                ->groupBy('date', 'categories.name')
+                ->orderBy('date', 'asc')
+                ->get();
+
+            
+
+
+            $dates = [];
+            $categoryData = [];
+            $colors = $this->getChartColors();
+            $total = 0;
+            foreach ($expenses as $expense) {
+                $dates[$expense->date] = true;
+                $categoryData[$expense->category][$expense->date] = (float) $expense->total;
+                $total = $total + (float) $expense->total;
+            }
+
+            $labels = array_keys($dates);
+
+            $datasets = [];
+            $colorIndex = 0;
+
+            foreach ($categoryData as $category => $values) {
+
+                // Ignore category if total is 0
+                if (array_sum($values) == 0) {
+                    continue;
+                }
+
+                $data = [];
+                foreach ($labels as $date) {
+                    $data[] = $values[$date] ?? 0;
+                }
+
+                $datasets[] = [
+                    'label' => $category,
+                    'data' => $data,
+                    'backgroundColor' => $colors[$colorIndex++ % count($colors)],
+                    'stack' => 'expenses'
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Day-wise category expenses retrieved successfully',
+                'total' => $total,
+                'data' => [
+                    'labels' => $labels,
+                    'datasets' => $datasets
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving expenses',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     /**
      * Helper: Get chart colors
