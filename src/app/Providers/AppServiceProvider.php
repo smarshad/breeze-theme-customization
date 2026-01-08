@@ -24,6 +24,7 @@ use App\Repositories\MenuRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\RoleRepository;
 use App\Repositories\UserRepository;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
@@ -82,6 +83,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        DB::prohibitDestructiveCommands(
+            app()->isProduction()
+        );
         Gate::before(function (User $user, string $ability) {
             if ($user->isSuperAdmin()) {
                 return true; // Grant all access

@@ -89,8 +89,9 @@ $(function () {
                     render: data => filePath(data)
 
                 },
+                { data: "expense_date" },
                 { data: "created_at" },
-                { data: "creator.name" },
+                // { data: "creator.name" },
                 {
                     render: function (data, type, row) {
                         // 'row' now contains the full object for the current row,

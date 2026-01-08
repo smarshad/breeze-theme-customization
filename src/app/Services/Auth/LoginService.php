@@ -2,6 +2,7 @@
 
 namespace App\Services\Auth;
 
+use App\Jobs\SendMail;
 use App\Mail\SendOtpMail;
 use App\Models\EmailOtp;
 use App\Models\User;
@@ -38,9 +39,9 @@ class LoginService
             'otp'   => $otp,
             'expired_at' => Carbon::now()->addMinutes($expiry)
         ]);
-       
-
-        Mail::to($email)->send(new SendOtpMail($otp, 'OTP For Login'));
+        // \Log::info("Dispatching email to: {$email}");
+        SendMail::dispatch($otp, 'OTP For Login', $email);
+        // \Log::info("Job dispatched for email: {$email}");
         return redirect()->route('login.otp.verify');
     }
 

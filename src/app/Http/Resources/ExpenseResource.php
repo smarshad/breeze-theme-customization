@@ -27,7 +27,7 @@ class ExpenseResource extends JsonResource
             'category_id' => $this->category_id,
             'expense_type_id' => $this->expense_type_id,
             'payment_method_id' => $this->payment_method_id,
-            'expense_date' => $this->expense_date,
+            'expense_date' => $this->expense_date->format('d/m/Y'),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'created_by' => $this->created_by,
             // full creator info (only if relation is loaded)

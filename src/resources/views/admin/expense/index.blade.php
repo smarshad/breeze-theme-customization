@@ -66,8 +66,9 @@
                                     <th>Description</th>
                                     <th>Notes</th>
                                     <th>File</th>
+                                    <th>Expense Date</th>
                                     <th>Created At</th>
-                                    <th>Created By</th>
+                                    <!-- <th>Created By</th> -->
                                     <th>Action</th>
                                 </tr>
                             <tbody>

@@ -16,10 +16,10 @@ class CheckIfLocked
         $user = $request->user();
 
         // Log for debugging
-        \Log::info('CheckIfLocked triggered', [
-            'user_id' => $user?->id,
-            'session_locked' => $request->session()->get('locked', false),
-        ]);
+        // \Log::info('CheckIfLocked triggered', [
+        //     'user_id' => $user?->id,
+        //     'session_locked' => $request->session()->get('locked', false),
+        // ]);
 
         // If user is locked in database
         if ($user && $user->is_locked) {

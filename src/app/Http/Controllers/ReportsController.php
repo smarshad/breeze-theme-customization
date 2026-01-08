@@ -77,12 +77,13 @@ class ReportsController extends Controller
      *   }
      * }
      */
-    public function index(){
+    public function index()
+    {
         $bodyCss = getAuthPageCss();
         $categories = Category::all();
         $expenseTypes = ExpenseType::all();
         $paymentMethods = PaymentMethod::all();
-        return view('admin.reports.index', compact('bodyCss','categories','paymentMethods','expenseTypes'));
+        return view('admin.reports.index', compact('bodyCss', 'categories', 'paymentMethods', 'expenseTypes'));
     }
 
 
@@ -92,40 +93,40 @@ class ReportsController extends Controller
             $userId = auth()->id();
             $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
             $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
-            
+
             // Build query
             $query = Expense::where('created_by', $userId)
                 ->whereNull('deleted_at')
                 ->whereBetween('expense_date', [$startDate, $endDate])
                 ->with('category', 'expenseType', 'paymentMethod');
-            
+
             // Apply filters
             if ($request->has('category_id') && $request->query('category_id')) {
                 $query->where('category_id', $request->query('category_id'));
             }
-            
+
             if ($request->has('payment_method_id') && $request->query('payment_method_id')) {
                 $query->where('payment_method_id', $request->query('payment_method_id'));
             }
-            
+
             if ($request->has('expense_type_id') && $request->query('expense_type_id')) {
                 $query->where('expense_type_id', $request->query('expense_type_id'));
             }
-            
+
             // Sorting
             $sortBy = $request->query('sort_by', 'expense_date');
             $sortOrder = $request->query('sort_order', 'desc');
-            
+
             $sortMap = [
                 'amount' => 'amount',
                 'date' => 'expense_date',
                 'category' => 'category_id',
                 'description' => 'description'
             ];
-            
+
             $sortColumn = $sortMap[$sortBy] ?? 'expense_date';
             $query->orderBy($sortColumn, $sortOrder);
-            
+
             // Get summary before pagination
             $summaryQuery = clone $query;
             $totalExpenses = $summaryQuery->sum('amount');
@@ -133,11 +134,11 @@ class ReportsController extends Controller
             $averageExpense = $totalCount > 0 ? $totalExpenses / $totalCount : 0;
             $highestExpense = $summaryQuery->max('amount') ?? 0;
             $lowestExpense = $summaryQuery->min('amount') ?? 0;
-            
+
             // Pagination
             $perPage = $request->query('per_page', 15);
             $expenses = $query->paginate($perPage);
-            
+
             // Format response
             $formattedExpenses = $expenses->map(function ($expense) {
                 return [
@@ -151,7 +152,7 @@ class ReportsController extends Controller
                     'notes' => $expense->notes
                 ];
             });
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Detailed report retrieved successfully',
@@ -200,7 +201,7 @@ class ReportsController extends Controller
             $userId = auth()->id();
             $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
             $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
-            
+
             $expenses = Expense::where('expenses.created_by', $userId)
                 ->whereNull('expenses.deleted_at')
                 ->whereBetween('expense_date', [$startDate, $endDate])
@@ -217,9 +218,9 @@ class ReportsController extends Controller
                 ->groupBy('categories.id', 'categories.name')
                 ->orderByDesc('total')
                 ->get();
-            
+
             $totalAmount = $expenses->sum('total');
-            
+
             $formattedData = $expenses->map(function ($item) use ($totalAmount) {
                 return [
                     'category_id' => $item->id,
@@ -232,7 +233,7 @@ class ReportsController extends Controller
                     'percentage' => $totalAmount > 0 ? round(($item->total / $totalAmount) * 100, 2) : 0
                 ];
             });
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Category report retrieved successfully',
@@ -267,7 +268,7 @@ class ReportsController extends Controller
             $userId = auth()->id();
             $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
             $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
-            
+
             $expenses = Expense::where('expenses.created_by', $userId)
                 ->whereNull('expenses.deleted_at')
                 ->whereBetween('expense_date', [$startDate, $endDate])
@@ -282,9 +283,9 @@ class ReportsController extends Controller
                 ->groupBy('payment_methods.id', 'payment_methods.name')
                 ->orderByDesc('total')
                 ->get();
-            
+
             $totalAmount = $expenses->sum('total');
-            
+
             $formattedData = $expenses->map(function ($item) use ($totalAmount) {
                 return [
                     'method_id' => $item->id,
@@ -296,7 +297,7 @@ class ReportsController extends Controller
                     'percentage' => $totalAmount > 0 ? round(($item->total / $totalAmount) * 100, 2) : 0
                 ];
             });
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Payment method report retrieved successfully',
@@ -329,7 +330,7 @@ class ReportsController extends Controller
         try {
             $userId = auth()->id();
             $year = $request->query('year', now()->year);
-            
+
             $expenses = Expense::where('created_by', $userId)
                 ->whereNull('deleted_at')
                 ->whereYear('expense_date', $year)
@@ -345,9 +346,9 @@ class ReportsController extends Controller
                 ->groupBy(DB::raw('MONTH(expense_date)'), DB::raw('MONTHNAME(expense_date)'))
                 ->orderBy('month', 'asc')
                 ->get();
-            
+
             $totalAmount = $expenses->sum('total');
-            
+
             $formattedData = $expenses->map(function ($item) use ($totalAmount) {
                 return [
                     'month' => $item->month,
@@ -360,7 +361,7 @@ class ReportsController extends Controller
                     'percentage' => $totalAmount > 0 ? round(($item->total / $totalAmount) * 100, 2) : 0
                 ];
             });
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Monthly summary report retrieved successfully',
@@ -396,24 +397,24 @@ class ReportsController extends Controller
             $userId = auth()->id();
             $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
             $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
-            
+
             $expenses = Expense::where('created_by', $userId)
                 ->whereNull('deleted_at')
                 ->whereBetween('expense_date', [$startDate, $endDate])
                 ->with('category', 'expenseType', 'paymentMethod')
                 ->orderBy('expense_date', 'desc')
                 ->get();
-            
+
             $filename = 'expenses_' . now()->format('Y-m-d_H-i-s') . '.csv';
-            
+
             $headers = [
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"'
             ];
-            
+
             $callback = function () use ($expenses) {
                 $file = fopen('php://output', 'w');
-                
+
                 // Write headers
                 fputcsv($file, [
                     'ID',
@@ -425,7 +426,7 @@ class ReportsController extends Controller
                     'Payment Method',
                     'Notes'
                 ]);
-                
+
                 // Write data
                 foreach ($expenses as $expense) {
                     fputcsv($file, [
@@ -439,10 +440,10 @@ class ReportsController extends Controller
                         $expense->notes
                     ]);
                 }
-                
+
                 fclose($file);
             };
-            
+
             return response()->stream($callback, 200, $headers);
         } catch (\Exception $e) {
             return response()->json([
@@ -465,23 +466,23 @@ class ReportsController extends Controller
             $userId = auth()->id();
             $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
             $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
-            
+
             $expenses = Expense::where('created_by', $userId)
                 ->whereNull('deleted_at')
                 ->whereBetween('expense_date', [$startDate, $endDate])
                 ->with('category', 'expenseType', 'paymentMethod')
                 ->orderBy('expense_date', 'desc')
                 ->get();
-            
+
             $totalAmount = $expenses->sum('amount');
-            
+
             $pdf = Pdf::loadView('reports.expenses-pdf', [
                 'expenses' => $expenses,
                 'totalAmount' => $totalAmount,
                 'startDate' => $startDate,
                 'endDate' => $endDate
             ]);
-            
+
             return $pdf->download('expenses_' . now()->format('Y-m-d_H-i-s') . '.pdf');
         } catch (\Exception $e) {
             return response()->json([
@@ -504,23 +505,23 @@ class ReportsController extends Controller
             $userId = auth()->id();
             $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
             $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
-            
+
             $expenses = Expense::where('created_by', $userId)
                 ->whereNull('deleted_at')
                 ->whereBetween('expense_date', [$startDate, $endDate])
                 ->with('category', 'expenseType', 'paymentMethod')
                 ->orderBy('expense_date', 'desc')
                 ->get();
-            
+
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
-            
+
             // Set headers
             $headers = ['ID', 'Description', 'Amount', 'Date', 'Category', 'Type', 'Payment Method', 'Notes'];
             foreach ($headers as $col => $header) {
                 $sheet->setCellValue(chr(65 + $col) . '1', $header);
             }
-            
+
             // Set data
             $row = 2;
             foreach ($expenses as $expense) {
@@ -534,19 +535,19 @@ class ReportsController extends Controller
                 $sheet->setCellValue('H' . $row, $expense->notes);
                 $row++;
             }
-            
+
             // Auto-fit columns
             foreach (range('A', 'H') as $col) {
                 $sheet->getColumnDimension($col)->setAutoSize(true);
             }
-            
+
             $filename = 'expenses_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
             $writer = new Xlsx($spreadsheet);
-            
+
             ob_start();
             $writer->save('php://output');
             $content = ob_get_clean();
-            
+
             return response($content, 200, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"'
@@ -570,34 +571,37 @@ class ReportsController extends Controller
     {
         try {
             $userId = auth()->id();
-            $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
-            $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
+            // $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
+            // $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
+
+            $startDate =$request->query('start_date');
+            $endDate =$request->query('end_date');
             
             $query = Expense::where('created_by', $userId)
                 ->whereNull('deleted_at')
                 ->whereBetween('expense_date', [$startDate, $endDate]);
-            
+
             // Apply all filters
             if ($request->has('category_id') && $request->query('category_id')) {
                 $query->where('category_id', $request->query('category_id'));
             }
-            
+
             if ($request->has('payment_method_id') && $request->query('payment_method_id')) {
                 $query->where('payment_method_id', $request->query('payment_method_id'));
             }
-            
+
             if ($request->has('expense_type_id') && $request->query('expense_type_id')) {
                 $query->where('expense_type_id', $request->query('expense_type_id'));
             }
-            
+
             if ($request->has('min_amount') && $request->query('min_amount')) {
                 $query->where('amount', '>=', $request->query('min_amount'));
             }
-            
+
             if ($request->has('max_amount') && $request->query('max_amount')) {
                 $query->where('amount', '<=', $request->query('max_amount'));
             }
-            
+
             if ($request->has('search') && $request->query('search')) {
                 $search = $request->query('search');
                 $query->where(function ($q) use ($search) {
@@ -605,15 +609,17 @@ class ReportsController extends Controller
                         ->orWhere('notes', 'like', '%' . $search . '%');
                 });
             }
-            
+
             // Get data
             $expenses = $query->with('category', 'expenseType', 'paymentMethod')
                 ->orderBy('expense_date', 'desc')
                 ->get();
-            
+            \Log::info('Detailed Report FULL SQL', [
+                'query' => $this->getFullSql($query),
+            ]);
             $totalAmount = $expenses->sum('amount');
             $totalCount = $expenses->count();
-            
+
             // Group by category
             $byCategory = $expenses->groupBy('category.name')->map(function ($items) {
                 return [
@@ -622,7 +628,7 @@ class ReportsController extends Controller
                     'total' => round($items->sum('amount'), 2)
                 ];
             })->values();
-            
+
             // Group by payment method
             $byPaymentMethod = $expenses->groupBy('paymentMethod.name')->map(function ($items) {
                 return [
@@ -631,7 +637,7 @@ class ReportsController extends Controller
                     'total' => round($items->sum('amount'), 2)
                 ];
             })->values();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Custom report generated successfully',
@@ -643,7 +649,7 @@ class ReportsController extends Controller
                     ],
                     'by_category' => $byCategory,
                     'by_payment_method' => $byPaymentMethod,
-                    'date_range' => $startDate->format('Y-m-d') . ' to ' . $endDate->format('Y-m-d'),
+                    'date_range' => $startDate. ' to ' . $endDate,
                     'filters_applied' => [
                         'category_id' => $request->query('category_id'),
                         'payment_method_id' => $request->query('payment_method_id'),
@@ -661,5 +667,25 @@ class ReportsController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function getFullSql($query)
+    {
+        $sql = $query->toSql();
+        $bindings = $query->getBindings();
+
+        foreach ($bindings as $binding) {
+            if (is_string($binding)) {
+                $binding = "'" . addslashes($binding) . "'";
+            } elseif ($binding instanceof \DateTimeInterface) {
+                $binding = "'" . $binding->format('Y-m-d H:i:s') . "'";
+            } elseif (is_null($binding)) {
+                $binding = 'NULL';
+            }
+
+            $sql = preg_replace('/\?/', $binding, $sql, 1);
+        }
+
+        return $sql;
     }
 }

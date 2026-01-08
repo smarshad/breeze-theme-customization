@@ -644,7 +644,7 @@
             });
 
             loadDetailedReport();
-            CommonCRUD.showNotification('success', 'Filters applied successfully');
+            // CommonCRUD.showNotification('success', 'Filters applied successfully');
         }
 
         /**
