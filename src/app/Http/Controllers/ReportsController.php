@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -570,101 +571,277 @@ class ReportsController extends Controller
     public function customReport(Request $request): JsonResponse
     {
         try {
-            $userId = auth()->id();
-            // $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
-            // $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
+            $validated = $request->validate([
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date',
+                'category_id' => 'nullable|exists:categories,id',
+                'payment_method_id' => 'nullable|exists:payment_methods,id',
+                'expense_type_id' => 'nullable|exists:expense_types,id',
+                'min_amount' => 'nullable|numeric|min:0',
+                'max_amount' => 'nullable|numeric|min:0',
+                'search' => 'nullable|string|max:255',
+                'status' => 'nullable|in:pending,approved,rejected',
+                'page' => 'nullable|integer|min:1',
+                'per_page' => 'nullable|integer|min:1|max:100',
+                'sort_by' => 'nullable|in:expense_date,amount,category,status',
+                'sort_order' => 'nullable|in:asc,desc'
+            ]);
 
-            $startDate =$request->query('start_date');
-            $endDate =$request->query('end_date');
-            
-            $query = Expense::where('created_by', $userId)
-                ->whereNull('deleted_at')
-                ->whereBetween('expense_date', [$startDate, $endDate]);
+            \Log::info('Custom Request', [
+                $request,
+            ]);
+            $user = Auth::user();
 
-            // Apply all filters
-            if ($request->has('category_id') && $request->query('category_id')) {
-                $query->where('category_id', $request->query('category_id'));
-            }
+            $query = Expense::query()
+                ->where('created_by', $user->id)
+                ->with(['category', 'expenseType', 'paymentMethod', 'creator']);
 
-            if ($request->has('payment_method_id') && $request->query('payment_method_id')) {
-                $query->where('payment_method_id', $request->query('payment_method_id'));
-            }
+            $query = $this->applyFilters($query, $validated);
 
-            if ($request->has('expense_type_id') && $request->query('expense_type_id')) {
-                $query->where('expense_type_id', $request->query('expense_type_id'));
-            }
+            // ✅ Clone query BEFORE pagination
+            $summaryQuery = clone $query;
 
-            if ($request->has('min_amount') && $request->query('min_amount')) {
-                $query->where('amount', '>=', $request->query('min_amount'));
-            }
+            $sortBy = $validated['sort_by'] ?? 'expense_date';
+            $sortOrder = $validated['sort_order'] ?? 'asc';
+            $query->orderBy($sortBy, $sortOrder);
+           
+            $perPage = $validated['per_page'] ?? 15;
 
-            if ($request->has('max_amount') && $request->query('max_amount')) {
-                $query->where('amount', '<=', $request->query('max_amount'));
-            }
-
-            if ($request->has('search') && $request->query('search')) {
-                $search = $request->query('search');
-                $query->where(function ($q) use ($search) {
-                    $q->where('description', 'like', '%' . $search . '%')
-                        ->orWhere('notes', 'like', '%' . $search . '%');
-                });
-            }
-
-            // Get data
-            $expenses = $query->with('category', 'expenseType', 'paymentMethod')
-                ->orderBy('expense_date', 'desc')
-                ->get();
-            \Log::info('Detailed Report FULL SQL', [
+            // $expenses = $query->paginate($perPage);
+            $expenses = $query->paginate($perPage, ['*'], 'page', $validated['page']);
+            \Log::info('Custom Report Report FULL SQL', [
                 'query' => $this->getFullSql($query),
             ]);
-            $totalAmount = $expenses->sum('amount');
-            $totalCount = $expenses->count();
-
-            // Group by category
-            $byCategory = $expenses->groupBy('category.name')->map(function ($items) {
-                return [
-                    'category' => $items->first()->category->name,
-                    'count' => $items->count(),
-                    'total' => round($items->sum('amount'), 2)
-                ];
-            })->values();
-
-            // Group by payment method
-            $byPaymentMethod = $expenses->groupBy('paymentMethod.name')->map(function ($items) {
-                return [
-                    'method' => $items->first()->paymentMethod->name,
-                    'count' => $items->count(),
-                    'total' => round($items->sum('amount'), 2)
-                ];
-            })->values();
+            // ✅ Summary from full dataset
+            $summary = $this->calculateSummary($summaryQuery);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Custom report generated successfully',
+                'message' => 'Report generated successfully',
                 'data' => [
-                    'summary' => [
-                        'total_amount' => round($totalAmount, 2),
-                        'total_count' => $totalCount,
-                        'average_amount' => $totalCount > 0 ? round($totalAmount / $totalCount, 2) : 0
-                    ],
-                    'by_category' => $byCategory,
-                    'by_payment_method' => $byPaymentMethod,
-                    'date_range' => $startDate. ' to ' . $endDate,
-                    'filters_applied' => [
-                        'category_id' => $request->query('category_id'),
-                        'payment_method_id' => $request->query('payment_method_id'),
-                        'expense_type_id' => $request->query('expense_type_id'),
-                        'min_amount' => $request->query('min_amount'),
-                        'max_amount' => $request->query('max_amount'),
-                        'search' => $request->query('search')
+                    'expenses' => $expenses->items(),
+                    'summary' => $summary,
+                    'pagination' => [
+                        'current_page' => $expenses->currentPage(),
+                        'per_page' => $expenses->perPage(),
+                        'total' => $expenses->total(),
+                        'last_page' => $expenses->lastPage(),
+                        'from' => $expenses->firstItem(),
+                        'to' => $expenses->lastItem(),
+                        // ✅ IMPORTANT
+                        'next_page_url' => $expenses->nextPageUrl(),
+                        'prev_page_url' => $expenses->previousPageUrl(),
                     ]
                 ]
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Report generation error', ['error' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error generating report'
+            ], 500);
+        }
+    }
+    /**
+     * Apply Filters to Query
+     * 
+     * @param $query
+     * @param array $filters
+     * @return mixed
+     */
+    private function applyFilters($query, array $filters)
+    {
+        // Date range filter
+        if (!empty($filters['start_date'])) {
+            $startDate = $filters['start_date'];
+            $query->whereDate('expense_date', '>=', $startDate);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $endDate = $filters['end_date'];
+            $query->whereDate('expense_date', '<=', $endDate);
+        }
+
+        // Category filter
+        if (!empty($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
+        }
+
+        // Payment method filter
+        if (!empty($filters['payment_method_id'])) {
+            $query->where('payment_method_id', $filters['payment_method_id']);
+        }
+
+        // Expense type filter
+        if (!empty($filters['expense_type_id'])) {
+            $query->where('expense_type_id', $filters['expense_type_id']);
+        }
+
+        // Amount range filter
+        if (!empty($filters['min_amount'])) {
+            $query->where('amount', '>=', $filters['min_amount']);
+        }
+
+        if (!empty($filters['max_amount'])) {
+            $query->where('amount', '<=', $filters['max_amount']);
+        }
+
+        // Text search filter
+        if (!empty($filters['search'])) {
+            $searchTerm = '%' . $filters['search'] . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('description', 'like', $searchTerm)
+                    ->orWhere('notes', 'like', $searchTerm);
+            });
+        }
+
+        // Status filter
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Calculate Summary Statistics
+     * 
+     * @param $query
+     * @return array
+     */
+    private function calculateSummary($query): array
+    {
+        $clonedQuery = clone $query;
+
+        $expenses = $clonedQuery->get();
+        $count = $expenses->count();
+
+        if ($count === 0) {
+            return [
+                'total_expenses' => 0,
+                'total_count' => 0,
+                'average_expense' => 0,
+                'highest_expense' => 0,
+                'lowest_expense' => 0,
+                'total_by_category' => [],
+                'total_by_payment_method' => [],
+                'total_by_status' => []
+            ];
+        }
+
+        $totalAmount = $expenses->sum('amount');
+        $averageAmount = $count > 0 ? $totalAmount / $count : 0;
+        $highestAmount = $expenses->max('amount');
+        $lowestAmount = $expenses->min('amount');
+
+        // Group by category
+        $byCategory = $expenses->groupBy('category.name')->map(function ($items) {
+            return [
+                'name' => $items->first()->category->name ?? 'Uncategorized',
+                'total' => $items->sum('amount'),
+                'count' => $items->count(),
+                'average' => $items->sum('amount') / $items->count()
+            ];
+        })->values();
+
+        // Group by payment method
+        $byPaymentMethod = $expenses->groupBy('paymentMethod.name')->map(function ($items) {
+            return [
+                'name' => $items->first()->paymentMethod->name ?? 'Unknown',
+                'total' => $items->sum('amount'),
+                'count' => $items->count(),
+                'average' => $items->sum('amount') / $items->count()
+            ];
+        })->values();
+
+        // Group by status
+        $byStatus = $expenses->groupBy('status')->map(function ($items) {
+            return [
+                'status' => $items->first()->status,
+                'total' => $items->sum('amount'),
+                'count' => $items->count(),
+                'average' => $items->sum('amount') / $items->count()
+            ];
+        })->values();
+
+        return [
+            'total_expenses' => round($totalAmount, 2),
+            'total_count' => $count,
+            'average_expense' => round($averageAmount, 2),
+            'highest_expense' => round($highestAmount, 2),
+            'lowest_expense' => round($lowestAmount, 2),
+            'total_by_category' => $byCategory,
+            'total_by_payment_method' => $byPaymentMethod,
+            'total_by_status' => $byStatus
+        ];
+    }
+
+    /**
+     * Export Report to CSV
+     * 
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function exportCSV(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            // Get expenses
+            $expenses = Expense::where('user_id', $user->id)
+                ->with(['category', 'expenseType', 'paymentMethod'])
+                ->orderBy('expense_date', 'desc')
+                ->get();
+
+            // Create CSV
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="expenses-' . date('Y-m-d') . '.csv"'
+            ];
+
+            $callback = function () use ($expenses) {
+                $file = fopen('php://output', 'w');
+
+                // Write headers
+                fputcsv($file, [
+                    'Date',
+                    'Category',
+                    'Type',
+                    'Amount',
+                    'Payment Method',
+                    'Description',
+                    'Status'
+                ]);
+
+                // Write data
+                foreach ($expenses as $expense) {
+                    fputcsv($file, [
+                        $expense->expense_date->format('Y-m-d'),
+                        $expense->category->name ?? '-',
+                        $expense->expenseType->name ?? '-',
+                        $expense->amount,
+                        $expense->paymentMethod->name ?? '-',
+                        $expense->description,
+                        $expense->status
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error generating custom report',
-                'error' => $e->getMessage()
+                'message' => 'Error exporting to CSV: ' . $e->getMessage()
             ], 500);
         }
     }

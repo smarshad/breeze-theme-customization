@@ -147,6 +147,12 @@
                                 <span class="d-none d-sm-block"><i class="fas fa-calendar"></i> Monthly Summary</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="#custom-report" data-toggle="tab" aria-expanded="false" class="nav-link">
+                                <span class="d-block d-sm-none"><i class="fas fa-calendar"></i></span>
+                                <span class="d-none d-sm-block"><i class="fas fa-calendar"></i> Custom Report</span>
+                            </a>
+                        </li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane show active"" id=" home-b1">
@@ -350,6 +356,10 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="tab-pane fade" id="custom-report" role="tabpanel">
+                            @include('admin.reports.partials.custom-report')
+                        </div>
                     </div>
                 </div>
             </div> <!-- end col -->
@@ -448,6 +458,226 @@
 
     <script>
         let currentFilters = {};
+
+        async function exportReportToCSV(){
+
+        }
+
+        async function loadCustomReport(page = 1) {
+            try {
+                currentPage = page;
+                showLoadingState();
+
+                const filters = {
+                    start_date: document.getElementById('report-start-date')?.value || '',
+                    end_date: document.getElementById('report-end-date')?.value || '',
+                    category_id: document.getElementById('report-category')?.value || '',
+                    payment_method_id: document.getElementById('report-payment-method')?.value || '',
+                    min_amount: document.getElementById('report-min-amount')?.value || '',
+                    max_amount: document.getElementById('report-max-amount')?.value || '',
+                    search: document.getElementById('report-search')?.value || '',
+                    page: page,
+                    per_page: 15
+                };
+
+                const params = new URLSearchParams();
+                Object.entries(filters).forEach(([k, v]) => {
+                    if (v !== '') params.append(k, v);
+                });
+
+                const response = await fetch(`/reports/custom?${params}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!data.success) throw new Error(data.message);
+
+                renderCustomReportTable(data.data.expenses || []);
+                updateReportSummary(data.data.summary || {});
+                renderPagination(data.data.pagination);
+                $('#summary-section').show();
+
+            } catch (err) {
+                console.error(err);
+            } finally {
+                hideLoadingState();
+            }
+        }
+
+        function changePage(page) {
+            if (page < 1) return;
+            loadCustomReport(page);
+        }
+        /**
+         * Render Custom Report Table
+         */
+        function renderCustomReportTable(expenses) {
+            const tbody = document.querySelector('#report-table tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            if (!expenses || expenses.length === 0) {
+                tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                        <p>No expenses found matching your criteria</p>
+                    </td>
+                </tr>
+            `;
+                return;
+            }
+
+            expenses.forEach(expense => {
+                const row = document.createElement('tr');
+                let formattedDate = new Date(expense.expense_date).toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+                row.innerHTML = `
+                <td>${formattedDate}</td>
+                <td>
+                    <span class="badge badge-info">${expense.category?.name || '-'}</span>
+                </td>
+                <td>${expense.expense_type?.name || '-'}</td>
+                <td class="font-weight-bold text-primary">$${parseFloat(expense.amount).toFixed(2)}</td>
+                <td>
+                    <span class="badge badge-secondary">${expense.payment_method?.name || '-'}</span>
+                </td>
+                <td>
+                    <small>${expense.description || '-'}</small>
+                </td>
+                <td>
+                    <span class="badge badge-${expense.status === 'approved' ? 'success' : expense.status === 'pending' ? 'warning' : 'danger'}">
+                        ${expense.status || 'N/A'}
+                    </span>
+                </td>
+            `;
+                tbody.appendChild(row);
+            });
+
+            console.log(`Rendered ${expenses.length} expense rows`);
+        }
+
+        function renderPagination(pagination) {
+            const container = document.getElementById('report-pagination');
+            if (!container || !pagination) return;
+
+            container.innerHTML = '';
+
+            const {
+                current_page,
+                last_page
+            } = pagination;
+            if (last_page <= 1) return;
+
+            // Prev button
+            container.innerHTML += `
+        <li class="page-item ${current_page === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${current_page - 1})">«</a>
+        </li>
+    `;
+
+            // Page numbers (windowed)
+            const start = Math.max(1, current_page - 2);
+            const end = Math.min(last_page, current_page + 2);
+
+            if (start > 1) {
+                container.innerHTML += `
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="changePage(1)">1</a>
+            </li>
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+        `;
+            }
+
+            for (let i = start; i <= end; i++) {
+                container.innerHTML += `
+            <li class="page-item ${i === current_page ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+            </li>
+        `;
+            }
+
+            if (end < last_page) {
+                container.innerHTML += `
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="changePage(${last_page})">${last_page}</a>
+            </li>
+        `;
+            }
+
+            // Next button
+            container.innerHTML += `
+        <li class="page-item ${current_page === last_page ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${current_page + 1})">»</a>
+        </li>
+    `;
+        }
+
+
+        /**
+         * Update Report Summary
+         */
+        function updateReportSummary(summary) {
+            document.getElementById('report-total').textContent = 'Rs. ' + (summary.total_expenses || 0).toFixed(2);
+            document.getElementById('report-count').textContent = summary.total_count || 0;
+            document.getElementById('report-average').textContent = 'Rs. ' + (summary.average_expense || 0).toFixed(2);
+            document.getElementById('report-highest').textContent = 'Rs. ' + (summary.highest_expense || 0).toFixed(2);
+            // document.getElementById('report-lowest').textContent = 'Rs. ' + (summary.lowest_expense || 0).toFixed(2);
+        }
+
+        /**
+         * Reset Report Filters
+         */
+        function resetReportFilters() {
+            document.getElementById('report-start-date').value = '';
+            document.getElementById('report-end-date').value = '';
+            document.getElementById('report-category').value = '';
+            document.getElementById('report-payment-method').value = '';
+            document.getElementById('report-min-amount').value = '';
+            document.getElementById('report-max-amount').value = '';
+            document.getElementById('report-search').value = '';
+
+            // Clear report
+            document.querySelector('#report-table tbody').innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                    <p>Click "Generate Report" to view expense data</p>
+                </td>
+            </tr>
+        `;
+            document.getElementById('summary-section').style.display = 'none';
+        }
+
+
+        /**
+         * Show Loading State
+         */
+        function showLoadingState() {
+            const loader = document.getElementById('report-loader');
+            if (loader) {
+                loader.style.display = 'flex';
+            }
+        }
+
+        /**
+         * Hide Loading State
+         */
+        function hideLoadingState() {
+            const loader = document.getElementById('report-loader');
+            if (loader) {
+                loader.style.display = 'none';
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             // Load initial reports
