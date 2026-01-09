@@ -783,68 +783,6 @@ class ReportsController extends Controller
         ];
     }
 
-    /**
-     * Export Report to CSV
-     * 
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
-    public function exportCSV(Request $request)
-    {
-        try {
-            $user = Auth::user();
-
-            // Get expenses
-            $expenses = Expense::where('user_id', $user->id)
-                ->with(['category', 'expenseType', 'paymentMethod'])
-                ->orderBy('expense_date', 'desc')
-                ->get();
-
-            // Create CSV
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="expenses-' . date('Y-m-d') . '.csv"'
-            ];
-
-            $callback = function () use ($expenses) {
-                $file = fopen('php://output', 'w');
-
-                // Write headers
-                fputcsv($file, [
-                    'Date',
-                    'Category',
-                    'Type',
-                    'Amount',
-                    'Payment Method',
-                    'Description',
-                    'Status'
-                ]);
-
-                // Write data
-                foreach ($expenses as $expense) {
-                    fputcsv($file, [
-                        $expense->expense_date->format('Y-m-d'),
-                        $expense->category->name ?? '-',
-                        $expense->expenseType->name ?? '-',
-                        $expense->amount,
-                        $expense->paymentMethod->name ?? '-',
-                        $expense->description,
-                        $expense->status
-                    ]);
-                }
-
-                fclose($file);
-            };
-
-            return response()->stream($callback, 200, $headers);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error exporting to CSV: ' . $e->getMessage()
-            ], 500);
-        }
-    }
 
     private function getFullSql($query)
     {
