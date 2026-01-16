@@ -155,10 +155,10 @@
                         </li>
                     </ul>
                     <div class="tab-content">
-                        <div class="tab-pane show active"" id=" home-b1">
+                        <div class="tab-pane show active" id="home-b1">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0">Detailed Expense Report</h5>
+                                    <h5 class="mb-0">Detailed Expense Report <span id="noOfDays"></span></h5>
                                     <div class="btn-group btn-group-sm">
                                         <button class="btn btn-outline-success" id="exportDetailedCsv">
                                             <i class="fas fa-download"></i> CSV
@@ -183,7 +183,7 @@
                                                 <th>Category</th>
                                                 <th>Type</th>
                                                 <th>Payment Method</th>
-                                                <th>Notes</th>
+                                                <th>Cashback</th>
                                             </tr>
                                         </thead>
                                         <tbody id="detailedTableBody">
@@ -546,7 +546,7 @@
                     <span class="badge badge-info">${expense.category?.name || '-'}</span>
                 </td>
                 <td>${expense.expense_type?.name || '-'}</td>
-                <td class="font-weight-bold text-primary">$${parseFloat(expense.amount).toFixed(2)}</td>
+                <td class="font-weight-bold text-primary">Rs. ${parseFloat(expense.amount).toFixed(2)}</td>
                 <td>
                     <span class="badge badge-secondary">${expense.payment_method?.name || '-'}</span>
                 </td>
@@ -728,7 +728,7 @@
                                 <td>${expense.category}</td>
                                 <td>${expense.type}</td>
                                 <td>${expense.payment_method}</td>
-                                <td>${expense.notes || '-'}</td>
+                                <td>${expense.cashback || 0}</td>
                             </tr>
                         `;
                             tbody.innerHTML += row;
@@ -739,6 +739,7 @@
                         document.getElementById('detailedCount').textContent = data.data.summary.total_count;
                         document.getElementById('detailedAverage').textContent = 'Rs. ' + data.data.summary.average_expense.toFixed(2);
                         document.getElementById('detailedHighest').textContent = 'Rs. ' + data.data.summary.highest_expense.toFixed(2);
+                        document.getElementById('noOfDays').textContent =  '('+data.data.summary.noOfDays+')';
                     }
                 })
                 .catch(error => console.error('Error loading detailed report:', error));

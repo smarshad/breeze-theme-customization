@@ -92,9 +92,11 @@ class ReportsController extends Controller
     {
         try {
             $userId = auth()->id();
-            $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
-            $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
-
+            // $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date', now()->subMonth()->toDateString()));
+            // $endDate = Carbon::createFromFormat('Y-m-d', $request->query('end_date', now()->toDateString()))->endOfDay();
+            $startDate = Carbon::createFromFormat('Y-m-d', $request->query('start_date'));
+            $endDate   = Carbon::createFromFormat('Y-m-d', $request->query('end_date'));
+            $noOfDays = $startDate->diffInDays($endDate) + 1;
             // Build query
             $query = Expense::where('created_by', $userId)
                 ->whereNull('deleted_at')
@@ -132,7 +134,8 @@ class ReportsController extends Controller
             $summaryQuery = clone $query;
             $totalExpenses = $summaryQuery->sum('amount');
             $totalCount = $summaryQuery->count();
-            $averageExpense = $totalCount > 0 ? $totalExpenses / $totalCount : 0;
+            // $averageExpense = $totalCount > 0 ? $totalExpenses / $totalCount : 0;
+            $averageExpense = $noOfDays > 0 ? $totalExpenses / $noOfDays : 0;
             $highestExpense = $summaryQuery->max('amount') ?? 0;
             $lowestExpense = $summaryQuery->min('amount') ?? 0;
 
@@ -145,6 +148,7 @@ class ReportsController extends Controller
                 return [
                     'id' => $expense->id,
                     'description' => $expense->description,
+                    'cashback' => $expense->cashback,
                     'amount' => round($expense->amount, 2),
                     'expense_date' => $expense->expense_date->format('Y-m-d'),
                     'category' => $expense->category->name ?? 'N/A',
@@ -162,6 +166,7 @@ class ReportsController extends Controller
                     'summary' => [
                         'total_expenses' => round($totalExpenses, 2),
                         'total_count' => $totalCount,
+                        'noOfDays' => $noOfDays,
                         'average_expense' => round($averageExpense, 2),
                         'highest_expense' => round($highestExpense, 2),
                         'lowest_expense' => round($lowestExpense, 2)
