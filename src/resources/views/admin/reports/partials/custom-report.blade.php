@@ -81,7 +81,7 @@
                 <div class="card border-0 shadow-sm border-top border-primary">
                     <div class="card-body">
                         <h6 class="card-title text-muted small font-weight-bold text-uppercase">Total Expenses</h6>
-                        <h3 class="text-primary font-weight-bold" id="report-total">$0.00</h3>
+                        <h3 class="text-primary font-weight-bold" id="report-total">Rs. 00</h3>
                         <small class="text-muted">Sum of all expenses</small>
                     </div>
                 </div>
@@ -101,7 +101,7 @@
                 <div class="card border-0 shadow-sm border-top border-info">
                     <div class="card-body">
                         <h6 class="card-title text-muted small font-weight-bold text-uppercase">Average Expense</h6>
-                        <h3 class="text-info font-weight-bold" id="report-average">$0.00</h3>
+                        <h3 class="text-info font-weight-bold" id="report-average">Rs. 00</h3>
                         <small class="text-muted">Average per transaction</small>
                     </div>
                 </div>
@@ -111,8 +111,18 @@
                 <div class="card border-0 shadow-sm border-top border-success">
                     <div class="card-body">
                         <h6 class="card-title text-muted small font-weight-bold text-uppercase">Highest Expense</h6>
-                        <h3 class="text-success font-weight-bold" id="report-highest">$0.00</h3>
+                        <h3 class="text-success font-weight-bold" id="report-highest">Rs. 00</h3>
                         <small class="text-muted">Maximum amount</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm border-top border-secondary">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted small font-weight-bold text-uppercase">Cashback Amount</h6>
+                        <h3 class="text-secondary font-weight-bold" id="cashback_amount">Rs. 00</h3>
+                        <small class="text-muted">Cashback Amount</small>
                     </div>
                 </div>
             </div>

@@ -740,6 +740,7 @@ class ReportsController extends Controller
         $averageAmount = $count > 0 ? $totalAmount / $count : 0;
         $highestAmount = $expenses->max('amount');
         $lowestAmount = $expenses->min('amount');
+        $cashBackAmount = $expenses->sum('cashback');
 
         // Group by category
         $byCategory = $expenses->groupBy('category.name')->map(function ($items) {
@@ -777,6 +778,7 @@ class ReportsController extends Controller
             'average_expense' => round($averageAmount, 2),
             'highest_expense' => round($highestAmount, 2),
             'lowest_expense' => round($lowestAmount, 2),
+            'cashback_amount' => round($cashBackAmount, 2),
             'total_by_category' => $byCategory,
             'total_by_payment_method' => $byPaymentMethod,
             'total_by_status' => $byStatus

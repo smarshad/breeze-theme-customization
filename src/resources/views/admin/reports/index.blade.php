@@ -631,7 +631,7 @@
             document.getElementById('report-count').textContent = summary.total_count || 0;
             document.getElementById('report-average').textContent = 'Rs. ' + (summary.average_expense || 0).toFixed(2);
             document.getElementById('report-highest').textContent = 'Rs. ' + (summary.highest_expense || 0).toFixed(2);
-            // document.getElementById('report-lowest').textContent = 'Rs. ' + (summary.lowest_expense || 0).toFixed(2);
+            document.getElementById('cashback_amount').textContent = 'Rs. ' + (summary.cashback_amount || 0).toFixed(2);
         }
 
         /**
