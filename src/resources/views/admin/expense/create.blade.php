@@ -185,6 +185,11 @@ $canSubmit = $isEdit ? Gate::allows('update', $expense) : Gate::allows('create',
                                 @endif
                             </div>
                             @endif
+
+                            <label for="bank_account" class="col-3 col-form-label">Bank Account</label>
+                            <div class="col-3">
+                                <input type="text" class="form-control" id="bank_account" name="bank_account" value="{{old('bank_account', $expense->bank_account ?? '')}}" placeholder="Bank Account">
+                            </div>
                         </div>
                        
                         <div class="form-group mb-0 row">

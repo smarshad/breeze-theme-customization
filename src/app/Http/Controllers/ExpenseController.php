@@ -89,7 +89,7 @@ class ExpenseController extends BaseController
             // Service layer creation
             $data  = $this->service->create($dto);
 
-            return $this->successResponse(new ExpenseResource($data), 'Expense Succesfully Created', 201, ['redirect' => route('expense.index')]);
+            return $this->successResponse(new ExpenseResource($data), 'Expense Succesfully Created', 201, ['redirect' => route('expense.create')]);
         } catch (ValidationException $e) {
             return $this->handleValidationException($e);
         } catch (DomainException $e) {
@@ -109,6 +109,7 @@ class ExpenseController extends BaseController
         $categories     = Category::all();
         $expenseTypes   = ExpenseType::all();
         $paymentMethods = PaymentMethod::all();
+        // dd($expense);
         return view('admin.expense.create', compact('categories', 'expenseTypes', 'paymentMethods', 'expense'));
     }
 

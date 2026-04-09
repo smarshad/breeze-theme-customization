@@ -30,6 +30,7 @@ class StoreRequest extends FormRequest
             'cashback'            => ['nullable', 'numeric'],
             'description'         => ['required', 'string', 'max:500'],
             'notes'               => ['nullable', 'string', 'max:255'],
+            'bank_account'        => ['required', 'string', 'max:4'],
             // Optional upload
             'uploaded_file'       => ['nullable', 'file', 'mimes:pdf,jpg,png,jpeg', 'max:10240'],
             // Optional string path (may remain null)

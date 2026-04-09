@@ -13,6 +13,7 @@ class ExpenseDTO
         public float $amount,
         public float $cashback,
         public ?string $notes = NULL,
+        public ?string $bank_account = NULL,
         public ?string $file_path = NULL,
         public readonly ?int $created_by = NULL,
 
@@ -29,6 +30,7 @@ class ExpenseDTO
             amount: $data['amount'],
             cashback: $data['cashback'] ?? 0.0,
             notes: $data['notes'] ?? NULL,
+            bank_account: $data['bank_account'] ?? NULL,
             file_path: isset($data['file_path']) ? (string) $data['file_path'] : NULL,
             created_by: $data['created_by'],
         );
@@ -45,6 +47,7 @@ class ExpenseDTO
             'amount' => $this->amount,
             'cashback' => $this->cashback,
             'notes' => $this->notes,
+            'bank_account' => $this->bank_account,
             'file_path' => $this->file_path,
             'created_by' => $this->created_by,
         ];

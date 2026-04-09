@@ -19,6 +19,7 @@ class Expense extends Model
         'amount',
         'cashback',
         'notes',
+        'bank_account',
         'file_path',
         'created_by'
     ];
